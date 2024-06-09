@@ -1,0 +1,878 @@
+openapi: "3.0.3"
+info:
+  title: "gateway API"
+  description: "gateway API"
+  version: "1.0.0"
+tags:
+  - name: "account api"
+    description: " Сервис работы с аккаунтом"
+  - name: "auth api"
+    description: " Сервис авторизации"
+  - name: "chat api"
+    description: " Сервис чата "
+  - name: "monitoring api"
+    description: " Средства мониторинга"
+  - name: "request api"
+    description: " Сервис заказа справок "
+paths:
+  /api/account-service/account:
+    post:
+      tags:
+        - "account api"
+      description: "Создание аккаунта"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationDTO"
+        required: true
+      responses:
+        "409":
+          description: "Conflict"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+  /api/account-service/find:
+    get:
+      description: ""
+      parameters:
+        - name: "u"
+          in: "query"
+          required: false
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/SummaryAccountDTO"
+  /api/auth/jwt/login:
+    post:
+      tags:
+        - "auth api"
+      description: "Авторизация пользователя с помощью JWT"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JWTLoginDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Tokens"
+  /api/chat-service/chats:
+    get:
+      description: "Получение списка чатов"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Chat"
+    post:
+      description: "Добавление чата"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddChatDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/chat-service/chats/{chatId}:
+    get:
+      tags:
+        - "chat api"
+      description: "Получение чата"
+      parameters:
+        - name: "chatId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Chat"
+  /api/chat-service/chats/{chatId}/messages:
+    post:
+      description: "Отправка сообщения"
+      parameters:
+        - name: "chatId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddMessageDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+  /api/chat-service/chats/{chatId}/messages/page:
+    get:
+      tags:
+        - "chat api"
+      description: "Постраничная выдача сообщений"
+      parameters:
+        - name: "chatId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - name: "page"
+          in: "query"
+          required: false
+          schema:
+            type: "integer"
+        - name: "elements"
+          in: "query"
+          required: false
+          schema:
+            type: "integer"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/MessageDTO"
+  /api/chat-service/chats/{chatId}/messages/time:
+    get:
+      tags:
+        - "chat api"
+      description: "Выдача сообщений по времени"
+      parameters:
+        - name: "chatId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+        - name: "datetime"
+          in: "query"
+          required: false
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/MessageDTO"
+  /api/chat-service/chats/{chatId}/users:
+    get:
+      description: "Получение всех пользователей в чате"
+      parameters:
+        - name: "chatId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/ChatMember"
+    post:
+      description: "Добавление пользователя в чат"
+      parameters:
+        - name: "chatId"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddUserDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+  /api/ping:
+    get:
+      tags:
+        - "monitoring api"
+      description: "Пинг сервисов"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  type: "string"
+              examples:
+                Example#1:
+                  description: ""
+                  value: [ ]
+  /api/request-service/employee/request:
+    get:
+      tags:
+        - "request api"
+      description: "Получение списка типов запросов для работника отдела"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/RequestDTO"
+  /api/request-service/employee/request/{id}/fail:
+    post:
+      tags:
+        - "request api"
+      description: "Отклонение заявки пользователя"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FailRequestDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+  /api/request-service/employee/request/{id}/success:
+    post:
+      tags:
+        - "request api"
+      description: "Одобрение заявки пользователя"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+  /api/request-service/requirement-types:
+    get:
+      description: "Получение списка типов требований"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/RequirementTypeDTO"
+    post:
+      description: "Добавление типа требований"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddRequirementTypeDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/RequirementTypeDTO"
+  /api/request-service/template:
+    get:
+      description: "Получение списка шаблонов для пользователя"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/TemplateDTO"
+    post:
+      description: "Добавление шаблона"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddTemplateDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+                format: "uuid"
+  /api/request-service/user/request:
+    get:
+      description: "Получение списка запросов пользователя"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/RequestDTO"
+    post:
+      tags:
+        - "request api"
+      description: "Добавление запроса"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddRequestDTO"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+                format: "uuid"
+  /api/request-service/user/request/{id}:
+    delete:
+      tags:
+        - "request api"
+      description: "Удаление запроса"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "object"
+  /api/university-service/departments:
+    get:
+      description: "Получение списка групп"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/DepartmentDto"
+    post:
+      description: "Добавление типа требований"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddDepartmentRequest"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/DepartmentDto"
+  /api/university-service/student-groups:
+    get:
+      description: "Получение списка групп"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/StudentGroupDto"
+    post:
+      description: "Добавление типа требований"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddStudentGroupRequest"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/StudentGroupDto"
+components:
+  schemas:
+    AddStudentInfoDTO:
+      type: "object"
+      properties:
+        studentGroup:
+          type: "string"
+      required:
+        - "studentGroup"
+    AddEmployeeInfoDTO:
+      type: "object"
+      properties:
+        department:
+          type: "string"
+        role:
+          type: "string"
+      required:
+        - "department"
+        - "role"
+    AddTeacherInfoDTO:
+      type: "object"
+      properties:
+        role:
+          type: "string"
+        title:
+          type: "string"
+      required:
+        - "role"
+        - "title"
+    AddAccountDTO:
+      type: "object"
+      properties:
+        firstName:
+          type: "string"
+        secondName:
+          type: "string"
+        patronymic:
+          type: "string"
+        addStudentInfoDTO:
+          $ref: "#/components/schemas/AddStudentInfoDTO"
+        addEmployeeInfoDTO:
+          $ref: "#/components/schemas/AddEmployeeInfoDTO"
+        addTeacherInfoDTO:
+          $ref: "#/components/schemas/AddTeacherInfoDTO"
+      required:
+        - "firstName"
+        - "secondName"
+    JWTLoginDTO:
+      type: "object"
+      properties:
+        login:
+          type: "string"
+        password:
+          type: "string"
+      required:
+        - "login"
+        - "password"
+    RegistrationDTO:
+      type: "object"
+      properties:
+        account:
+          $ref: "#/components/schemas/AddAccountDTO"
+        auth:
+          $ref: "#/components/schemas/JWTLoginDTO"
+      required:
+        - "account"
+        - "auth"
+    Tokens:
+      type: "object"
+      properties:
+        accessToken:
+          type: "string"
+        refreshToken:
+          type: "string"
+      required:
+        - "accessToken"
+        - "refreshToken"
+    ChatMember:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        firstName:
+          type: "string"
+        secondName:
+          type: "string"
+        patronymic:
+          type: "string"
+        role:
+          type: "string"
+      required:
+        - "id"
+        - "firstName"
+        - "secondName"
+        - "role"
+    Instant:
+      type: "object"
+      properties: { }
+    MessageDTO:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        text:
+          type: "string"
+        userId:
+          type: "string"
+        utcDateTime:
+          $ref: "#/components/schemas/Instant"
+        attachment:
+          type: "array"
+          items:
+            type: "string"
+      required:
+        - "id"
+        - "text"
+        - "userId"
+        - "utcDateTime"
+        - "attachment"
+    Chat:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        name:
+          type: "string"
+        members:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/ChatMember"
+        messages:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/MessageDTO"
+      required:
+        - "id"
+        - "name"
+        - "members"
+        - "messages"
+    AddChatDTO:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+      required:
+        - "name"
+    AddMessageDTO:
+      type: "object"
+      properties:
+        text:
+          type: "string"
+        files:
+          type: "array"
+          items:
+            type: "string"
+      required:
+        - "text"
+    AddUserDTO:
+      type: "object"
+      properties:
+        userId:
+          type: "string"
+      required:
+        - "userId"
+    RequirementFieldDTO:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        description:
+          type: "string"
+        type:
+          type: "string"
+        value:
+          type: "string"
+      required:
+        - "name"
+        - "description"
+        - "type"
+        - "value"
+    RequestDTO:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        name:
+          type: "string"
+        description:
+          type: "string"
+        userId:
+          type: "string"
+        type:
+          type: "string"
+          enum:
+            - "FACETOFACE"
+            - "EMAIL"
+        status:
+          type: "string"
+          enum:
+            - "SUCCESS"
+            - "INPROGRESS"
+            - "DENIED"
+            - "REMOVED"
+        message:
+          type: "string"
+        createdAt:
+          $ref: "#/components/schemas/Instant"
+        fields:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/RequirementFieldDTO"
+      required:
+        - "id"
+        - "name"
+        - "description"
+        - "userId"
+        - "type"
+        - "status"
+        - "createdAt"
+        - "fields"
+    FailRequestDTO:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+      required:
+        - "message"
+    RequirementTypeDTO:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        name:
+          type: "string"
+      required:
+        - "id"
+        - "name"
+    AddRequirementTypeDTO:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+      required:
+        - "name"
+    RequirementDto:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        name:
+          type: "string"
+        description:
+          type: "string"
+        requirementType:
+          type: "string"
+      required:
+        - "id"
+        - "name"
+        - "description"
+        - "requirementType"
+    TemplateDTO:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        name:
+          type: "string"
+        description:
+          type: "string"
+        category:
+          type: "string"
+        requirements:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/RequirementDto"
+      required:
+        - "id"
+        - "name"
+        - "description"
+        - "category"
+        - "requirements"
+    AddRequirementDTO:
+      type: "object"
+      properties:
+        requirementTypeId:
+          type: "string"
+        name:
+          type: "string"
+        description:
+          type: "string"
+      required:
+        - "requirementTypeId"
+        - "name"
+        - "description"
+    AddTemplateDTO:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        description:
+          type: "string"
+        category:
+          type: "string"
+        departmentId:
+          type: "string"
+        requirements:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/AddRequirementDTO"
+        groups:
+          type: "array"
+          items:
+            type: "string"
+            enum:
+              - "STUDENT"
+              - "EMPLOYEE"
+              - "GRADUATE"
+      required:
+        - "name"
+        - "description"
+        - "category"
+        - "departmentId"
+        - "requirements"
+        - "groups"
+    AddRequirementFieldDTO:
+      type: "object"
+      properties:
+        requirementId:
+          type: "string"
+        value:
+          type: "string"
+      required:
+        - "requirementId"
+        - "value"
+    AddRequestDTO:
+      type: "object"
+      properties:
+        templateId:
+          type: "string"
+        type:
+          type: "string"
+          enum:
+            - "FACETOFACE"
+            - "EMAIL"
+        email:
+          type: "string"
+        fields:
+          type: "array"
+          items:
+            $ref: "#/components/schemas/AddRequirementFieldDTO"
+      required:
+        - "templateId"
+        - "type"
+        - "fields"
+    DepartmentDto:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        name:
+          type: "string"
+        description:
+          type: "string"
+      required:
+        - "id"
+        - "name"
+        - "description"
+    AddDepartmentRequest:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+        description:
+          type: "string"
+      required:
+        - "name"
+        - "description"
+    StudentGroupDto:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        name:
+          type: "string"
+      required:
+        - "id"
+        - "name"
+    AddStudentGroupRequest:
+      type: "object"
+      properties:
+        name:
+          type: "string"
+      required:
+        - "name"
+    SummaryAccountDTO:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        firstName:
+          type: "string"
+        secondName:
+          type: "string"
+        patronymic:
+          type: "string"
+      required:
+        - "id"
+        - "firstName"
+        - "secondName"
