@@ -30,6 +30,7 @@ dependencies {
     implementation(project(":chat-service-api"))
     implementation(project(":account-data-api"))
     implementation(project(":university-data-api"))
+    implementation(project(":bulletin-board-service-api"))
 
     implementation("io.github.smiley4:ktor-swagger-ui:2.9.0")
 
@@ -49,6 +50,8 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logback_version")
     implementation("io.ktor:ktor-client-cio-jvm:2.3.10")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0-RC.2")
+    implementation("io.ktor:ktor-server-cors:$ktor_version")
+    implementation(project(":bulletin-board-service-api"))
 
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")

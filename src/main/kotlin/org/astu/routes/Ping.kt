@@ -16,6 +16,7 @@ fun Route.ping() {
     val authHost = environment?.config?.property("ktor.auth.host")?.getString()
     val requestHost = environment?.config?.property("ktor.request.host")?.getString()
     val uniRequestHost = environment?.config?.property("ktor.uni-request.host")?.getString()
+    val bulletinBoardHost = environment?.config?.property("ktor.request.host")?.getString()
     val client by inject<HttpClient>()
 
     /**
@@ -68,6 +69,13 @@ fun Route.ping() {
             results.add("UniversityService: [${response.status}]")
         }.onFailure {
             results.add("UniversityService: [$it]  ${it.message}")
+        }
+
+        runCatching {
+            val response = client.get("${bulletinBoardHost}ping")
+            results.add("BulletinBoardService: [${response.status}]")
+        }.onFailure {
+            results.add("BulletinBoardService: [$it]  ${it.message}")
         }
 
         call.respond(results)
