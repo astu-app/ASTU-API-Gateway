@@ -10,6 +10,8 @@ import org.koin.ktor.ext.inject
 
 fun Route.requestServiceDefinition(){
     val host = environment?.config?.property("ktor.request.host")?.getString() ?: throw Exception("Host not set")
+    val accountHost = environment?.config?.property("ktor.account.host")?.getString() ?: throw Exception("Host not set")
+
     val client by inject<HttpClient>()
 
     route("/request-service", {
@@ -17,6 +19,6 @@ fun Route.requestServiceDefinition(){
     }){
         templates(host, client)
         requirementTypes(host, client)
-        request(host, client)
+        request(host, accountHost, client)
     }
 }

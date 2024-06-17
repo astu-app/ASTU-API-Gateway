@@ -13,10 +13,22 @@ services:
       - internet
     env_file:
       - .env
+#  pgAdmin:
+#    restart: on-failure
+#    container_name: ASTU-PgAdmin
+#    environment:
+#      - PGADMIN_DEFAULT_EMAIL=admin@astu.com
+#      - PGADMIN_DEFAULT_PASSWORD=root
+#    ports:
+#      - "5050:80"
 networks:
   services-network:
     driver: bridge
     name: private-astu-services-network
+    internal: true
+  database-network:
+    driver: bridge
+    name: private-database-network
     internal: true
   internet:
     driver: bridge

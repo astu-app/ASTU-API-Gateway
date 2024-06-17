@@ -27,14 +27,14 @@ class TemplateControllerApi(val client: HttpClient, private val basePath: String
      * @param body
      * @return java.util.UUID
      */
-    suspend fun addTemplate(body: AddTemplateDTO): UUID {
+    suspend fun addTemplate(body: AddTemplateDTO): String {
         val response = client.post("${basePath}api/template") {
             contentType(ContentType.Application.Json)
             setBody(body)
         }
 
         return when (response.status) {
-            HttpStatusCode.OK -> response.body<UUID>()
+            HttpStatusCode.OK -> response.body<String>()
             else -> throw Exception("Request failed")
         }
     }

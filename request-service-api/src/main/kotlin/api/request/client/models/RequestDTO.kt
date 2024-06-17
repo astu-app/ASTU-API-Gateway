@@ -44,8 +44,8 @@ data class RequestDTO(
      * Values: FACETOFACE,EMAIL
      */
     enum class Type(val value: String) {
-        FACETOFACE("FaceToFace"),
-        EMAIL("Email");
+        FaceToFace("FaceToFace"),
+        Email("Email");
     }
 
     /**
@@ -53,9 +53,9 @@ data class RequestDTO(
      * Values: SUCCESS,INPROGRESS,DENIED,REMOVED
      */
     enum class Status(val value: String) {
-        SUCCESS("Success"),
-        INPROGRESS("InProgress"),
-        DENIED("Denied"),
-        REMOVED("Removed");
+        Success("Success"),
+        InProgress("InProgress"),
+        Denied("Denied"),
+        Removed("Removed");
     }
 }

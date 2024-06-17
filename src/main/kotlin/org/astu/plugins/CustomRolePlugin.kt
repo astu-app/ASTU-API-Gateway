@@ -28,6 +28,7 @@ val CustomRolePlugin = createRouteScopedPlugin(
                 ?: throw Exception("Host not set")
             val client by call.inject<HttpClient>()
             call.principal<CustomUserPrincipal>()?.let {
+                println("accountId: ${it.id}")
                 val account = AccountApi(client, accountHost).getAccount(it.id)
                 if (!expression(account))
                     call.respond(HttpStatusCode.Forbidden)

@@ -33,7 +33,7 @@ data class AddRequestDTO (
     * Values: FACETOFACE,EMAIL
     */
     enum class Type(val value: String){
-        FACETOFACE("FaceToFace"),
-        EMAIL("Email");
+        FaceToFace("FaceToFace"),
+        Email("Email");
     }
 }

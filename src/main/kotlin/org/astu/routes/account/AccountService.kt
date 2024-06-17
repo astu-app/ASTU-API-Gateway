@@ -1,6 +1,7 @@
 package org.astu.routes.account
 
 import api.account.client.apis.AccountApi
+import api.account.client.models.AccountDTO
 import api.account.client.models.SummaryAccountDTO
 import api.auth.client.apis.JWTApi
 import api.auth.client.models.JWTRegistrationDTO
@@ -10,9 +11,11 @@ import io.github.smiley4.ktorswaggerui.dsl.route
 import io.ktor.client.*
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.astu.plugins.CustomUserPrincipal
 import org.astu.routes.account.dto.RegistrationDTO
 import org.koin.ktor.ext.inject
 
@@ -67,6 +70,21 @@ fun Route.accountServiceDefinition() {
             val text = call.request.queryParameters["u"] ?: throw Exception("parameter u is required")
             val result = accountApi.search(text)
             call.respond(HttpStatusCode.OK, result)
+        }
+
+        authenticate(("custom")) {
+            get("me", {
+                summary = "Получение информации о текущем аккаунте"
+                response {
+                    default {
+                        body<AccountDTO>()
+                    }
+                }
+            }) {
+                call.principal<CustomUserPrincipal>()?.also { principal ->
+                    call.respond(HttpStatusCode.OK, accountApi.getAccount(principal.id))
+                }
+            }
         }
     }
 }

@@ -31,14 +31,14 @@ class RequestControllerApi(val client: HttpClient, private val basePath: String 
      * @param userId
      * @return java.util.UUID
      */
-    suspend fun addRequest(body: AddRequestDTO, userId: UUID): UUID {
-        val response = client.post("${basePath}api/request/user/{$userId}") {
+    suspend fun addRequest(body: AddRequestDTO, userId: UUID): String {
+        val response = client.post("${basePath}api/request/user/$userId") {
             contentType(ContentType.Application.Json)
             setBody(body)
         }
 
         return when (response.status) {
-            HttpStatusCode.OK -> response.body<UUID>()
+            HttpStatusCode.OK -> response.body<String>()
             else -> throw Exception("Request failed")
         }
     }
@@ -51,7 +51,7 @@ class RequestControllerApi(val client: HttpClient, private val basePath: String 
      * @return void
      */
     suspend fun fail(body: FailRequestDTO, id: UUID) {
-        val response = client.post("${basePath}api/request/{$id}/fail") {
+        val response = client.post("${basePath}api/request/$id/fail") {
             contentType(ContentType.Application.Json)
             setBody(body)
         }
@@ -69,7 +69,7 @@ class RequestControllerApi(val client: HttpClient, private val basePath: String 
      * @return kotlin.Array<RequestDTO>
      */
     suspend fun getRequestsForEmployee(departmentId: UUID): List<RequestDTO> {
-        val response = client.get("${basePath}api/request/department/{$departmentId}")
+        val response = client.get("${basePath}api/request/employee/$departmentId")
 
         return when (response.status) {
             HttpStatusCode.OK -> response.body<List<RequestDTO>>()
@@ -84,7 +84,7 @@ class RequestControllerApi(val client: HttpClient, private val basePath: String 
      * @return kotlin.Array<RequestDTO>
      */
     suspend fun getRequestsForUser(userId: UUID): List<RequestDTO> {
-        val response = client.get("${basePath}api/request/user/{$userId}")
+        val response = client.get("${basePath}api/request/user/$userId")
 
         return when (response.status) {
             HttpStatusCode.OK -> response.body<List<RequestDTO>>()
@@ -99,7 +99,7 @@ class RequestControllerApi(val client: HttpClient, private val basePath: String 
      * @return void
      */
     suspend fun removeRequest(requestId: UUID) {
-        val response = client.delete("${basePath}api/request/user/{$requestId}")
+        val response = client.delete("${basePath}api/request/user/$requestId")
 
         return when (response.status) {
             HttpStatusCode.OK -> Unit
@@ -115,14 +115,7 @@ class RequestControllerApi(val client: HttpClient, private val basePath: String 
      * @return void
      */
     suspend fun success(id: UUID, files: List<PartData>) {
-        val response = client.post("${basePath}api/request/$id/success") {
-            contentType(ContentType.MultiPart.FormData)
-            setBody(
-                MultiPartFormDataContent(
-                    files
-                )
-            )
-        }
+        val response = client.submitFormWithBinaryData(url ="${basePath}api/request/$id/success", formData = files)
 
         return when (response.status) {
             HttpStatusCode.OK -> Unit

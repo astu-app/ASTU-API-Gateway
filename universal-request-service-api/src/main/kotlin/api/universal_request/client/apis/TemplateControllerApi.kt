@@ -31,15 +31,8 @@ class TemplateControllerApi(val client: HttpClient, private val basePath: String
      * @param body
      * @return java.util.UUID
      */
-    suspend fun addTemplate(data: List<PartData>): Unit {
-        val response = client.post("${basePath}api/templates/upload") {
-            contentType(ContentType.MultiPart.FormData)
-            setBody(
-                MultiPartFormDataContent(
-                    data
-                )
-            )
-        }
+    suspend fun addTemplate(data: List<PartData>) {
+        val response = client.submitFormWithBinaryData(url ="${basePath}api/templates/upload", formData = data)
 
         return when (response.status) {
             HttpStatusCode.OK -> response.body<Unit>()

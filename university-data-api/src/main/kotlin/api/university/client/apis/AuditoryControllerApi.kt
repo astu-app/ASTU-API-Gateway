@@ -30,7 +30,7 @@ class AuditoryControllerApi(
      * @return AuditoryDTO
      */
     suspend fun addAuditory(body: AddAuditoryRequest): AuditoryDTO {
-        val response = httpClient.post("$basePath/api/auditory") {
+        val response = httpClient.post("${basePath}api/auditory") {
             contentType(ContentType.Application.Json)
             setBody(body)
         }
@@ -46,7 +46,7 @@ class AuditoryControllerApi(
      * @return kotlin.Array<AuditoryDTO>
      */
     suspend fun getAuditories(): List<AuditoryDTO> {
-        val response = httpClient.get("$basePath/api/auditory") {
+        val response = httpClient.get("${basePath}api/auditory") {
         }
         return when (response.status) {
             HttpStatusCode.OK -> response.body<List<AuditoryDTO>>()

@@ -6,13 +6,13 @@ import api.account.client.models.SummaryAccountDTO
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import me.xdrop.fuzzywuzzy.FuzzySearch
 
 class AccountApi(private val client: HttpClient, private val basePath: String = "/") {
     suspend fun getAccount(userId: String): AccountDTO {
         val response = client.get("${basePath}api/account/$userId")
-
         return when (response.status) {
             HttpStatusCode.OK -> response.body<AccountDTO>()
             else -> throw Exception("Error getting account")

@@ -33,6 +33,22 @@ fun Route.templates(host: String, client: HttpClient) = route("/templates") {
         }
     }) {
         val parts = call.receiveMultipart().readAllParts()
+        parts.forEach { part ->
+            when  (part)  {
+                is PartData.BinaryChannelItem -> {
+                    println("Был найден binary channel ${part.name}")
+                }
+                is PartData.BinaryItem -> {
+                    println("Был найден binary ${part.name}")
+                }
+                is PartData.FileItem -> {
+                    println("Был найден file  ${part.name}")
+                }
+                is PartData.FormItem -> {
+                    println("Был найден form ${part.name}")
+                }
+            }
+        }
         uniRequestApi.addTemplate(parts)
         call.respond(HttpStatusCode.OK)
     }

@@ -30,7 +30,7 @@ class DisciplineControllerApi(
      * @return DisciplineDTO
      */
     suspend fun addDiscipline(body: AddDisciplineRequest): DisciplineDTO {
-        val response = httpClient.post("$basePath/api/disciplines") {
+        val response = httpClient.post("${basePath}api/disciplines") {
             contentType(ContentType.Application.Json)
             setBody(body)
         }
@@ -46,7 +46,7 @@ class DisciplineControllerApi(
      * @return kotlin.Array<DisciplineDTO>
      */
     suspend fun getDisciplines(): List<DisciplineDTO> {
-        val response = httpClient.get("$basePath/api/disciplines")
+        val response = httpClient.get("${basePath}api/disciplines")
         return when (response.status) {
             HttpStatusCode.OK -> response.body<List<DisciplineDTO>>()
             else -> throw IllegalStateException("${response.status}")

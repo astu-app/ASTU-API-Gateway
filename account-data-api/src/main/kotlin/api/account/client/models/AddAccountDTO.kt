@@ -1,21 +1,20 @@
 package api.account.client.models
 
 import kotlinx.serialization.Serializable
+import java.util.*
 
 @Serializable
 class AddAccountDTO(
     val firstName: String,
     val secondName: String,
     val patronymic: String? = null,
-    val addStudentInfoDTO: AddStudentInfoDTO? = null,
-    val addEmployeeInfoDTO: AddEmployeeInfoDTO? = null,
-    val addTeacherInfoDTO: AddTeacherInfoDTO? = null,
-    val isAdmin: Boolean = false
+    val departmentId: String? = null,
+    val studentGroupId: String? = null
 )
 
 @Serializable
 class AddStudentInfoDTO(
-    val studentGroup: String
+    val studentGroupId: String
 )
 
 @Serializable
@@ -23,6 +22,6 @@ class AddTeacherInfoDTO(val role: String, val title: String)
 
 @Serializable
 class AddEmployeeInfoDTO(
-    val department: String,
+    val departmentId: String,
     val role: String
 )

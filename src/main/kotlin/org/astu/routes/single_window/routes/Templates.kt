@@ -37,7 +37,7 @@ fun Route.templates(host: String, client: HttpClient) = route("/template") {
         }
     }
 
-    checkRole({ it.isAdmin }) {
+//    checkRole({ it.isAdmin }) {
         /**
          * Добавление шаблона
          * @OpenAPITag request api
@@ -49,7 +49,7 @@ fun Route.templates(host: String, client: HttpClient) = route("/template") {
             }
             response {
                 default {
-                    body<UUID>()
+                    body<String>()
                 }
             }
         }) {
@@ -57,5 +57,5 @@ fun Route.templates(host: String, client: HttpClient) = route("/template") {
             val id = api.addTemplate(dto)
             call.respond(id)
         }
-    }
+//    }
 }
