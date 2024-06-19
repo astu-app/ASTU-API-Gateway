@@ -1,12 +1,13 @@
 package api.bulletinBoard.client.models.announcements
 
 import api.bulletinBoard.client.models.surveys.details.SurveyDetailsDto
+import api.bulletinBoard.client.models.users.UserSummaryDto
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 
 /**
  * @param id Идентификатор объявления
- * @param authorName Автор объявления
+ * @param author Автор объявления
  * @param content Текстовое содержимое объявления
  * @param publishedAt Время публикации объявления
  * @param hiddenAt Время сокрытия объявления
@@ -19,7 +20,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class AnnouncementSummaryDto(
     val id: String,
-    val authorName: String,
+    val author: UserSummaryDto,
     val content: String,
     val publishedAt: LocalDateTime?,
     val hiddenAt: LocalDateTime?,

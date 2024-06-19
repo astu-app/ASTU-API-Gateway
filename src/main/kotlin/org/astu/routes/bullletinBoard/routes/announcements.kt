@@ -12,7 +12,7 @@ import io.ktor.server.routing.*
 import org.astu.plugins.CustomUserPrincipal
 import org.astu.routes.bullletinBoard.respond
 
-fun Route.announcements(bulletinBoardHost: String, client: HttpClient) = route("/announcements/") {
+fun Route.announcements(bulletinBoardHost: String, client: HttpClient) = route("/announcements") {
     val announcementsApi = api.bulletinBoard.client.apis.AnnouncementsApi(client, bulletinBoardHost)
 
     /**
