@@ -1,5 +1,6 @@
 package org.astu.routes.account
 
+import api.account.client.AccountServiceException
 import api.account.client.apis.AccountApi
 import api.account.client.models.AccountDTO
 import api.account.client.models.SummaryAccountDTO
@@ -82,7 +83,19 @@ fun Route.accountServiceDefinition() {
                 }
             }) {
                 call.principal<CustomUserPrincipal>()?.also { principal ->
-                    call.respond(HttpStatusCode.OK, accountApi.getAccount(principal.id))
+                    runCatching {
+                        accountApi.getAccount(principal.id)
+                    }.onFailure {
+                        when (it) {
+                            is AccountServiceException ->
+                                call.respondText(it.message ?: "", status = HttpStatusCode.BadRequest)
+
+                            else ->
+                                call.respondText(it.message ?: "", status = HttpStatusCode.InternalServerError)
+                        }
+                    }.onSuccess {
+                        call.respond(HttpStatusCode.OK, it)
+                    }
                 }
             }
         }

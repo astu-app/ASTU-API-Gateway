@@ -35,12 +35,12 @@ fun Route.ping() {
             results.add("AccountService: [$it]  ${it.message}")
         }
 
-        runCatching {
-            val response = client.get("${chatHost}ping")
-            results.add("ChatService: [${response.status}]")
-        }.onFailure {
-            results.add("ChatService: [$it]  ${it.message}")
-        }
+//        runCatching {
+//            val response = client.get("${chatHost}ping")
+//            results.add("ChatService: [${response.status}]")
+//        }.onFailure {
+//            results.add("ChatService: [$it]  ${it.message}")
+//        }
 
         runCatching {
             val response = client.get("${authHost}ping")
@@ -63,12 +63,12 @@ fun Route.ping() {
             results.add("Universal Request Service: [$it]  ${it.message}")
         }
 
-        runCatching {
-            val response = client.get("${universityHost}ping")
-            results.add("UniversityService: [${response.status}]")
-        }.onFailure {
-            results.add("UniversityService: [$it]  ${it.message}")
-        }
+//        runCatching {
+//            val response = client.get("${universityHost}ping")
+//            results.add("UniversityService: [${response.status}]")
+//        }.onFailure {
+//            results.add("UniversityService: [$it]  ${it.message}")
+//        }
 
         call.respond(results)
     }

@@ -29,10 +29,16 @@ val CustomRolePlugin = createRouteScopedPlugin(
             val client by call.inject<HttpClient>()
             call.principal<CustomUserPrincipal>()?.let {
                 println("accountId: ${it.id}")
-                val account = AccountApi(client, accountHost).getAccount(it.id)
-                if (!expression(account))
-                    call.respond(HttpStatusCode.Forbidden)
-                call.attributes.put(accountKey, account)
+                kotlin.runCatching {
+                    AccountApi(client, accountHost).getAccount(it.id)
+                }.onFailure {
+                    call.respondText("Не удалось получить информацию об аккаунте", status = HttpStatusCode.Forbidden)
+                    return@on
+                }.onSuccess { accountDTO ->
+                    if (!expression(accountDTO))
+                        call.respond(HttpStatusCode.Forbidden)
+                    call.attributes.put(accountKey, accountDTO)
+                }
             }
         }
     }

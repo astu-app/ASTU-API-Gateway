@@ -11,6 +11,8 @@
  */
 package api.request.client.apis
 
+import api.request.client.ErrorResponse
+import api.request.client.RequestServiceException
 import api.request.client.models.AddTemplateDTO
 import api.request.client.models.TemplateDTO
 import io.ktor.client.*
@@ -35,7 +37,11 @@ class TemplateControllerApi(val client: HttpClient, private val basePath: String
 
         return when (response.status) {
             HttpStatusCode.OK -> response.body<String>()
-            else -> throw Exception("Request failed")
+            HttpStatusCode.BadRequest -> {
+                val error = response.body<ErrorResponse>()
+                throw RequestServiceException("400: ${error.message}")
+            }
+            else -> throw RequestServiceException("Не удалось создать шаблон заявления")
         }
     }
 
@@ -50,7 +56,7 @@ class TemplateControllerApi(val client: HttpClient, private val basePath: String
 
         return when (response.status) {
             HttpStatusCode.OK -> response.body<List<TemplateDTO>>()
-            else -> throw Exception("Request failed")
+            else -> throw RequestServiceException("Не удалось получить список шаблонов")
         }
     }
 }

@@ -11,6 +11,7 @@
  */
 package api.auth.client.apis
 
+import api.auth.client.AuthServiceException
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -18,6 +19,7 @@ import io.ktor.http.*
 import api.auth.client.models.JWTLoginDTO
 import api.auth.client.models.JWTRegistrationDTO
 import api.auth.client.models.Tokens
+import io.ktor.client.statement.*
 
 class JWTApi(val client: HttpClient, private val basePath: String = "/") {
 
@@ -33,7 +35,8 @@ class JWTApi(val client: HttpClient, private val basePath: String = "/") {
         }
         return when (response.status) {
             HttpStatusCode.OK -> response.body<Tokens>()
-            else -> throw RuntimeException()
+            HttpStatusCode.BadRequest -> throw AuthServiceException(response.bodyAsText())
+            else -> throw AuthServiceException("Не удалось авторизоваться")
         }
     }
 
@@ -44,7 +47,7 @@ class JWTApi(val client: HttpClient, private val basePath: String = "/") {
         }
         return when (response.status) {
             HttpStatusCode.OK -> response.body<Tokens>()
-            else -> throw RuntimeException()
+            else -> throw AuthServiceException("Не удалось зарегистрировать аккаунт")
         }
     }
 
@@ -52,7 +55,7 @@ class JWTApi(val client: HttpClient, private val basePath: String = "/") {
         val response = client.get("${basePath}login/${login}")
         return when (response.status) {
             HttpStatusCode.OK -> response.body<Boolean>()
-            else -> throw RuntimeException()
+            else -> throw AuthServiceException("Не удалось получить информацию о наличии логина")
         }
     }
 }

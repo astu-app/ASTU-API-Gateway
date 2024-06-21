@@ -11,6 +11,7 @@
  */
 package api.universal_request.client.apis
 
+import api.universal_request.client.UniversalRequestServiceException
 import api.universal_request.client.models.FileModel
 import api.universal_request.client.models.TemplateDTO
 import api.universal_request.client.models.TemplateFieldDTO
@@ -36,7 +37,8 @@ class TemplateControllerApi(val client: HttpClient, private val basePath: String
 
         return when (response.status) {
             HttpStatusCode.OK -> response.body<Unit>()
-            else -> throw Exception("Request failed")
+            HttpStatusCode.BadRequest -> throw UniversalRequestServiceException(response.bodyAsText())
+            else -> throw UniversalRequestServiceException("Не удалось создать шаблон заявления")
         }
     }
 
@@ -51,7 +53,8 @@ class TemplateControllerApi(val client: HttpClient, private val basePath: String
 
         return when (response.status) {
             HttpStatusCode.OK -> response.body<List<TemplateDTO>>()
-            else -> throw Exception("Request failed")
+            HttpStatusCode.BadRequest -> throw UniversalRequestServiceException(response.bodyAsText())
+            else -> throw UniversalRequestServiceException("Request failed")
         }
     }
 
@@ -69,7 +72,8 @@ class TemplateControllerApi(val client: HttpClient, private val basePath: String
 
         val array = when (response.status) {
             HttpStatusCode.OK -> response.body<ByteArray>()
-            else -> throw Exception("Request failed")
+            HttpStatusCode.BadRequest -> throw UniversalRequestServiceException(response.bodyAsText())
+            else -> throw UniversalRequestServiceException("Request failed")
         }
 
         return FileModel(array, response.contentType())

@@ -41,11 +41,18 @@ fun Route.request(host: String, accountHost: String, client: HttpClient) {
     }) {
         call.principal<CustomUserPrincipal>()?.also { principal ->
             val userId = UUID.fromString(principal.id)
-            val response = api.getRequestsForUser(userId)
+            val response = runCatching{ api.getRequestsForUser(userId) }
+                .onFailure {
+                    call.respondText(it.message ?: "", status = HttpStatusCode.BadRequest)
+                    return@get
+                }.getOrElse {
+                    listOf()
+                }
+
             val mappedRequests = response.map {
                 RequestDTO(
                     id = it.id,
-                    name = it.id,
+                    name = it.name,
                     description = it.description,
                     type = it.type,
                     status = it.status,
@@ -72,8 +79,13 @@ fun Route.request(host: String, accountHost: String, client: HttpClient) {
     }) {
         val requestId = UUID.fromString(call.parameters["id"])
         call.principal<CustomUserPrincipal>()?.also { _ ->
-            api.removeRequest(requestId)
-            call.respond(HttpStatusCode.OK)
+            runCatching {
+                api.removeRequest(requestId)
+            }.onFailure {
+                call.respondText(it.message ?: "", status = HttpStatusCode.BadRequest)
+            }.onSuccess {
+                call.respond(HttpStatusCode.OK)
+            }
         }
     }
 
@@ -96,8 +108,13 @@ fun Route.request(host: String, accountHost: String, client: HttpClient) {
             val dto = call.receive<AddRequestDTO>()
 
             val userId = UUID.fromString(principal.id)
-            val id = api.addRequest(dto, userId)
-            call.respond(id)
+            runCatching {
+                api.addRequest(dto, userId)
+            }.onFailure {
+                call.respondText(it.message ?: "", status = HttpStatusCode.BadRequest)
+            }.onSuccess {
+                call.respond(it)
+            }
         }
     }
 
@@ -120,7 +137,14 @@ fun Route.request(host: String, accountHost: String, client: HttpClient) {
             println(user.id)
             val account = accountApi.getAccount(user.id)
             val departmentId = UUID.fromString(account.departmentId)
-            val response = api.getRequestsForEmployee(departmentId)
+            val response = runCatching {
+                api.getRequestsForEmployee(departmentId)
+            }.onFailure {
+                call.respondText(it.message ?: "", status = HttpStatusCode.BadRequest)
+                return@get
+            }.getOrElse {
+                listOf()
+            }
             if (response.isEmpty()) {
                 call.respond(HttpStatusCode.OK, response)
                 return@get
@@ -171,8 +195,13 @@ fun Route.request(host: String, accountHost: String, client: HttpClient) {
         val requestId = UUID.fromString(call.parameters["id"])
         val parts = call.receiveMultipart().readAllParts()
         call.principal<CustomUserPrincipal>()?.also { _ ->
-            api.success(requestId, parts)
-            call.respond(HttpStatusCode.OK)
+            runCatching {
+                api.success(requestId, parts)
+            }.onFailure {
+                call.respondText(it.message ?: "", status = HttpStatusCode.BadRequest)
+            }.onSuccess {
+                call.respond(HttpStatusCode.OK)
+            }
         }
     }
 
@@ -191,8 +220,13 @@ fun Route.request(host: String, accountHost: String, client: HttpClient) {
         val dto = call.receive<FailRequestDTO>()
 
         call.principal<CustomUserPrincipal>()?.also { _ ->
-            api.fail(dto, requestId)
-            call.respond(HttpStatusCode.OK)
+            runCatching {
+                api.fail(dto, requestId)
+            }.onFailure {
+                call.respondText(it.message ?: "", status = HttpStatusCode.BadRequest)
+            }.onSuccess {
+                call.respond(HttpStatusCode.OK)
+            }
         }
     }
 //    }

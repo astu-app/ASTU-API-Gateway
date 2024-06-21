@@ -2,6 +2,7 @@ package org.astu.di
 
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -19,6 +20,11 @@ fun Application.module(): Module {
             json(Json {
                 this.encodeDefaults = true
             })
+        }
+        install(HttpTimeout){
+            requestTimeoutMillis = 40000
+            socketTimeoutMillis = 40000
+            connectTimeoutMillis = 40000
         }
         engine {
             https {

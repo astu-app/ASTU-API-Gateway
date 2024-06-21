@@ -11,6 +11,7 @@
  */
 package api.request.client.apis
 
+import api.request.client.RequestServiceException
 import api.request.client.models.AddRequirementTypeDTO
 import api.request.client.models.RequirementTypeDTO
 import io.ktor.client.*
@@ -34,7 +35,7 @@ class RequirementTypeControllerApi(val client: HttpClient, private val basePath:
 
         return when (response.status) {
             HttpStatusCode.OK -> response.body<RequirementTypeDTO>()
-            else -> throw Exception("Request failed")
+            else -> throw RequestServiceException("Не удалось добавить тип заявления")
         }
     }
     /**
@@ -47,7 +48,7 @@ class RequirementTypeControllerApi(val client: HttpClient, private val basePath:
 
         return when (response.status) {
             HttpStatusCode.OK -> response.body<List<RequirementTypeDTO>>()
-            else -> throw Exception("Request failed")
+            else -> throw RequestServiceException("Не удалось получить список типов требований")
         }
     }
 }

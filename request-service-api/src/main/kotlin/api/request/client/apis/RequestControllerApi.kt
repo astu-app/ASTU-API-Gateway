@@ -11,6 +11,8 @@
  */
 package api.request.client.apis
 
+import api.request.client.ErrorResponse
+import api.request.client.RequestServiceException
 import api.request.client.models.AddRequestDTO
 import api.request.client.models.FailRequestDTO
 import io.ktor.client.*
@@ -39,7 +41,11 @@ class RequestControllerApi(val client: HttpClient, private val basePath: String 
 
         return when (response.status) {
             HttpStatusCode.OK -> response.body<String>()
-            else -> throw Exception("Request failed")
+            HttpStatusCode.BadRequest -> {
+                val error = response.body<ErrorResponse>()
+                throw RequestServiceException("400: ${error.message}")
+            }
+            else -> throw RequestServiceException("Не удалось создать заявление на справку")
         }
     }
 
@@ -58,7 +64,11 @@ class RequestControllerApi(val client: HttpClient, private val basePath: String 
 
         return when (response.status) {
             HttpStatusCode.OK -> Unit
-            else -> throw Exception("Request failed")
+            HttpStatusCode.BadRequest -> {
+                val error = response.body<ErrorResponse>()
+                throw RequestServiceException("400: ${error.message}")
+            }
+            else -> throw RequestServiceException("Не удалось отказать в заявлении")
         }
     }
 
@@ -73,7 +83,11 @@ class RequestControllerApi(val client: HttpClient, private val basePath: String 
 
         return when (response.status) {
             HttpStatusCode.OK -> response.body<List<RequestDTO>>()
-            else -> throw Exception("Request failed")
+            HttpStatusCode.BadRequest -> {
+                val error = response.body<ErrorResponse>()
+                throw RequestServiceException("400: ${error.message}")
+            }
+            else -> throw RequestServiceException("Не удалось получить список заявлений на обработку")
         }
     }
 
@@ -88,7 +102,11 @@ class RequestControllerApi(val client: HttpClient, private val basePath: String 
 
         return when (response.status) {
             HttpStatusCode.OK -> response.body<List<RequestDTO>>()
-            else -> throw Exception("Request failed")
+            HttpStatusCode.BadRequest -> {
+                val error = response.body<ErrorResponse>()
+                throw RequestServiceException("400: ${error.message}")
+            }
+            else -> throw RequestServiceException("Не удалось получить список поданных заявлений пользователем")
         }
     }
 
@@ -103,7 +121,11 @@ class RequestControllerApi(val client: HttpClient, private val basePath: String 
 
         return when (response.status) {
             HttpStatusCode.OK -> Unit
-            else -> throw Exception("Request failed")
+            HttpStatusCode.BadRequest -> {
+                val error = response.body<ErrorResponse>()
+                throw RequestServiceException("400: ${error.message}")
+            }
+            else -> throw RequestServiceException("Не удалось отменить заявление")
         }
     }
 
@@ -119,7 +141,11 @@ class RequestControllerApi(val client: HttpClient, private val basePath: String 
 
         return when (response.status) {
             HttpStatusCode.OK -> Unit
-            else -> throw Exception("Request failed")
+            HttpStatusCode.BadRequest -> {
+                val error = response.body<ErrorResponse>()
+                throw RequestServiceException("400: ${error.message}")
+            }
+            else -> throw RequestServiceException("Не удалось одобрить заявление")
         }
     }
 }

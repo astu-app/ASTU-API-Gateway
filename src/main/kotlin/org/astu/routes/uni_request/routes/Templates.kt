@@ -49,8 +49,13 @@ fun Route.templates(host: String, client: HttpClient) = route("/templates") {
                 }
             }
         }
-        uniRequestApi.addTemplate(parts)
-        call.respond(HttpStatusCode.OK)
+        runCatching {
+            uniRequestApi.addTemplate(parts)
+        }.onFailure {
+            call.respondText(it.message ?: "", status = HttpStatusCode.BadRequest)
+        }.onSuccess {
+            call.respond(HttpStatusCode.OK)
+        }
     }
     get({
         summary = "Получение списка шаблонов"
@@ -60,8 +65,13 @@ fun Route.templates(host: String, client: HttpClient) = route("/templates") {
             }
         }
     }) {
-        val templates = uniRequestApi.getTemplates()
-        call.respond(templates)
+        runCatching {
+            uniRequestApi.getTemplates()
+        }.onFailure {
+            call.respondText(it.message ?: "", status = HttpStatusCode.BadRequest)
+        }.onSuccess {
+            call.respond(it)
+        }
     }
 
     post("{id}", {
@@ -78,7 +88,12 @@ fun Route.templates(host: String, client: HttpClient) = route("/templates") {
     }) {
         val id = call.parameters["id"]!!
         val dto = call.receive<List<TemplateFieldDTO>>()
-        val file = uniRequestApi.fillTemplate(UUID.fromString(id), dto)
-        call.respondBytes(file.content, file.contentType)
+        runCatching {
+            uniRequestApi.fillTemplate(UUID.fromString(id), dto)
+        }.onFailure {
+            call.respondText(it.message ?: "", status = HttpStatusCode.BadRequest)
+        }.onSuccess {
+            call.respondBytes(it.content, it.contentType)
+        }
     }
 }

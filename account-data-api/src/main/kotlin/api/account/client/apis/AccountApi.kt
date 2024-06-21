@@ -1,5 +1,7 @@
 package api.account.client.apis
 
+import api.account.client.AccountServiceException
+import api.account.client.ErrorResponse
 import api.account.client.models.AccountDTO
 import api.account.client.models.AddAccountDTO
 import api.account.client.models.SummaryAccountDTO
@@ -15,7 +17,11 @@ class AccountApi(private val client: HttpClient, private val basePath: String = 
         val response = client.get("${basePath}api/account/$userId")
         return when (response.status) {
             HttpStatusCode.OK -> response.body<AccountDTO>()
-            else -> throw Exception("Error getting account")
+            HttpStatusCode.BadRequest -> {
+                val error = response.body<ErrorResponse>()
+                throw AccountServiceException("400: ${error.message}")
+            }
+            else -> throw AccountServiceException("Произошла ошибка при получении пользователя")
         }
     }
 
@@ -24,7 +30,11 @@ class AccountApi(private val client: HttpClient, private val basePath: String = 
 
         return when (response.status) {
             HttpStatusCode.OK -> response.body<List<SummaryAccountDTO>>()
-            else -> throw Exception("Error getting accounts")
+            HttpStatusCode.BadRequest -> {
+                val error = response.body<ErrorResponse>()
+                throw AccountServiceException("400: ${error.message}")
+            }
+            else -> throw AccountServiceException("Произошла ошибка при получении списка пользователей")
         }
     }
 
@@ -36,7 +46,11 @@ class AccountApi(private val client: HttpClient, private val basePath: String = 
 
         return when (response.status) {
             HttpStatusCode.OK -> response.body<String>().removeSurrounding("\"")
-            else -> throw Exception("Error getting accounts")
+            HttpStatusCode.BadRequest -> {
+                val error = response.body<ErrorResponse>()
+                throw AccountServiceException("400: ${error.message}")
+            }
+            else -> throw AccountServiceException("Произошла ошибка при добавлении пользователя")
         }
     }
 

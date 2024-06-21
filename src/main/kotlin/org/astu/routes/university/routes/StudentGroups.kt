@@ -6,6 +6,7 @@ import api.university.client.models.StudentGroupDto
 import io.github.smiley4.ktorswaggerui.dsl.get
 import io.github.smiley4.ktorswaggerui.dsl.post
 import io.ktor.client.*
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -26,8 +27,13 @@ fun Route.studentGroups(host: String, client: HttpClient) = route("/student-grou
             }
         }
     }) {
-        val response = api.getAllStudentGroups()
-        call.respond(response)
+        runCatching {
+            api.getAllStudentGroups()
+        }.onFailure {
+            call.respondText(it.message ?: "", status = HttpStatusCode.BadRequest)
+        }.onSuccess {
+            call.respond(it)
+        }
     }
 
 //    checkRole({ it.isAdmin }) {

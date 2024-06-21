@@ -1,10 +1,12 @@
 package org.astu.routes.auth
 
+import api.auth.client.AuthServiceException
 import api.auth.client.apis.JWTApi
 import api.auth.client.models.JWTLoginDTO
 import api.auth.client.models.Tokens
 import io.github.smiley4.ktorswaggerui.dsl.post
 import io.ktor.client.*
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -33,7 +35,15 @@ fun Route.authServiceDefinition() {
         }
     }) {
         val dto = call.receive<JWTLoginDTO>()
-        val response = JWTApi(client, host).jwtLoginPost(dto)
-        call.respond(response)
+        kotlin.runCatching {
+            JWTApi(client, host).jwtLoginPost(dto)
+        }.onFailure {
+            when (it) {
+                is AuthServiceException -> call.respondText(it.message!!, status = HttpStatusCode.BadRequest)
+                else -> call.respondText("Не удалось авторизоваться", status = HttpStatusCode.InternalServerError)
+            }
+        }.onSuccess {
+            call.respond(it)
+        }
     }
 }
