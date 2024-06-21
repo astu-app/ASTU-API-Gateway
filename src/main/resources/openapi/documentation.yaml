@@ -661,6 +661,44 @@ paths:
           description: Internal Server Error
 
 
+  /announcements/addView:
+    post:
+      tags: [ Announcements ]
+      operationId: addViewToAnnouncement
+      summary: Добавить просмотр объявлению
+      parameters:
+        - in: header
+          name: X-User-Id
+          required: true
+          schema:
+            description: Идентификатор пользователя
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/announcementIdentifierDto'
+      responses:
+        200:
+          description: Ok
+        401:
+          description: Unauthorized
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                title: addViewToAnnouncementNotFound
+                properties:
+                  code:
+                    # announcementDoesNotExist
+                    $ref: '#/components/schemas/addViewToAnnouncementResponses'
+        500:
+          description: Internal Server Error
+
   /api/bulletin-board-service/announcements/update:
     put:
       tags: [ "announcements api" ]
@@ -2304,6 +2342,15 @@ components:
         Ответы:
           detailsAccessForbidden - Пользователь не имеет права просмотреть подробности объявления
           announcementDoesNotExist - Объявление не существует
+
+    addViewToAnnouncementResponses:
+      type: string
+      enum:
+        # 404
+        - announcementDoesNotExist
+      description: >
+        Ответы:
+          announcementDoesNotExist - Объявление не существует 
 
     getAnnouncementUpdateContentResponses:
       type: string

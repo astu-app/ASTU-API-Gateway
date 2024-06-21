@@ -18,14 +18,17 @@ fun Application.configureHTTP() {
         }
     }
 
-    install(CORS){
-        allowMethod(HttpMethod.Options)
-        allowMethod(HttpMethod.Put)
-        allowMethod(HttpMethod.Patch)
-        allowMethod(HttpMethod.Delete)
-        allowHeader(HttpHeaders.ContentType)
-        allowHeader(HttpHeaders.Authorization)
-        allowCredentials = true
-        anyHost()
+    val corsEnabled = environment.config.property("ktor.cors.enabled").getString().toBoolean()
+    if (corsEnabled) {
+        install(CORS) {
+            allowMethod(HttpMethod.Options)
+            allowMethod(HttpMethod.Put)
+            allowMethod(HttpMethod.Patch)
+            allowMethod(HttpMethod.Delete)
+            allowHeader(HttpHeaders.ContentType)
+            allowHeader(HttpHeaders.Authorization)
+            allowCredentials = true
+            anyHost()
+        }
     }
 }

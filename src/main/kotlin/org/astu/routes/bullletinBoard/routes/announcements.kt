@@ -1,6 +1,5 @@
 package org.astu.routes.bullletinBoard.routes
 
-import api.bulletinBoard.client.apis.AnnouncementsApi
 import api.bulletinBoard.client.models.announcements.CreateAnnouncementDto
 import api.bulletinBoard.client.models.announcements.UpdateAnnouncementDto
 import io.ktor.client.*
@@ -20,7 +19,7 @@ fun Route.announcements(bulletinBoardHost: String, client: HttpClient) = route("
      * @OpenAPITag bulletin board api
      */
     post("create") {
-        val dto = call.receive<api.bulletinBoard.client.models.announcements.CreateAnnouncementDto>()
+        val dto = call.receive<CreateAnnouncementDto>()
         call.principal<CustomUserPrincipal>()?.also { principal ->
             val response = announcementsApi.createAnnouncement(dto, principal.id)
             respond(call, response)
@@ -56,9 +55,21 @@ fun Route.announcements(bulletinBoardHost: String, client: HttpClient) = route("
      * @OpenAPITag bulletin board api
      */
     put("update") {
-        val dto = call.receive<api.bulletinBoard.client.models.announcements.UpdateAnnouncementDto>()
+        val dto = call.receive<UpdateAnnouncementDto>()
         call.principal<CustomUserPrincipal>()?.also { principal ->
             val response = announcementsApi.updateAnnouncement(dto, principal.id)
+            respond(call, response)
+        }
+    }
+    
+    /**
+     * Добавить просмотр объявлению
+     * @OpenAPITag bulletin board api
+     */
+    post("addView") {
+        val announcementId = call.receive<String>()
+        call.principal<CustomUserPrincipal>()?.also { principal ->
+            val response = announcementsApi.addViewToAnnouncement(announcementId, principal.id)
             respond(call, response)
         }
     }

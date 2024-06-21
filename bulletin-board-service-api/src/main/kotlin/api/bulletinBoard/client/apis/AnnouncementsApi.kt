@@ -96,6 +96,26 @@ class AnnouncementsApi(private val client: HttpClient, private val baseUrl: Stri
     }
 
     /**
+     * Добавить просмотр объявлению
+     */
+    suspend fun addViewToAnnouncement(announcementId: String, principalId: String): HttpResponseContent {
+        val response = client.post("${baseUrl}api/announcements/addView") {
+            headers {
+                append("X-User-Id", principalId)
+                append("Content-Type", "application/json")
+            }
+            setBody(announcementId)
+        }
+        return when (response.status) {
+            HttpStatusCode.OK -> HttpResponseContent(null, response.status)
+            HttpStatusCode.Unauthorized -> HttpResponseContent(null, response.status)
+            HttpStatusCode.NotFound -> HttpResponseContent(response.body<ErrorCode>(), response.status)
+            HttpStatusCode.InternalServerError -> HttpResponseContent(null, response.status)
+            else -> HttpResponseContent(null, response.status)
+        }
+    }
+
+    /**
      * Удалить объявление
      */
     suspend fun deleteAnnouncement(announcementId: String, principalId: String): HttpResponseContent {

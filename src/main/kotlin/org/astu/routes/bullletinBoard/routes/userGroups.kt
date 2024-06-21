@@ -10,7 +10,7 @@ import io.ktor.server.routing.*
 import org.astu.plugins.CustomUserPrincipal
 import org.astu.routes.bullletinBoard.respond
 
-fun Route.userGroups(bulletinBoardHost: String, client: HttpClient) = route("/usergroups/") {
+fun Route.userGroups(bulletinBoardHost: String, client: HttpClient) = route("/usergroups") {
     val userGroupsApi = api.bulletinBoard.client.apis.UserGroupsApi(client, bulletinBoardHost)
 
     /**
