@@ -2,7 +2,9 @@ package org.astu.plugins
 
 import com.ucasoft.ktor.simpleCache.SimpleCache
 import com.ucasoft.ktor.simpleMemoryCache.memoryCache
+import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.plugins.cors.routing.*
 import kotlin.time.Duration.Companion.seconds
 
 fun Application.configureHTTP() {
@@ -13,6 +15,20 @@ fun Application.configureHTTP() {
     install(SimpleCache) {
         memoryCache {
             this.invalidateAt = 120.seconds
+        }
+    }
+
+    val corsEnabled = environment.config.property("ktor.cors.enabled").getString().toBoolean()
+    if (corsEnabled) {
+        install(CORS) {
+            allowMethod(HttpMethod.Options)
+            allowMethod(HttpMethod.Put)
+            allowMethod(HttpMethod.Patch)
+            allowMethod(HttpMethod.Delete)
+            allowHeader(HttpHeaders.ContentType)
+            allowHeader(HttpHeaders.Authorization)
+            allowCredentials = true
+            anyHost()
         }
     }
 }

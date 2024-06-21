@@ -14,6 +14,12 @@ tags:
     description: " Средства мониторинга"
   - name: "request api"
     description: " Сервис заказа справок "
+  - name: "announcements api"
+    description: " Эндпоинты объявлений сервиса доски объявлений"
+  - name: "surveys api"
+    description: " Эндпоинты опросов сервиса доски объявлений"
+  - name: "usergroups api"
+    description: " Эндпоинты групп пользователей сервиса доски объявлений"
 paths:
   /api/account-service/account:
     post:
@@ -467,6 +473,1186 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/StudentGroupDto"
+
+
+
+  # bulletin board
+  ## announcements
+  /api/bulletin-board-service/announcements/create:
+    post:
+      tags: [ "announcements api" ]
+      operationId: createAnnouncement
+      summary: Создать объявление
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createAnnouncementDto'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                title: createAnnouncementCreated
+                properties:
+                  content:
+                    $ref: '#/components/schemas/announcementIdentifierDto'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    # audienceNullOrEmpty
+                    # contentNullOrEmpty
+                    $ref: '#/components/schemas/createAnnouncementResponses'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: createAnnouncementForbidden
+                properties:
+                  code:
+                    # announcementCreationForbidden
+                    $ref: '#/components/schemas/createAnnouncementResponses'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                title: createAnnouncementNotFound
+                properties:
+                  code:
+                    # attachmentsDoNotExist
+                    $ref: '#/components/schemas/createAnnouncementResponses'
+        409:
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                title: createAnnouncementConflict
+                properties:
+                  code:
+                    # delayedPublishingMomentIsInPast
+                    # delayedHidingMomentIsInPast
+                    # delayedPublishingMomentAfterDelayedHidingMoment
+                    # pieceOfAudienceDoesNotExist
+                    $ref: '#/components/schemas/createAnnouncementResponses'
+        500:
+          description: Internal Server Error
+
+  /api/bulletin-board-service/announcements/get-details/{id}:
+    get:
+      tags: [ "announcements api" ]
+      operationId: getAnnouncementDetails
+      summary: Получить подробности о выбранном объявлении
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Идентификатор объявления
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getAnnouncementDetailsOk
+                properties:
+                  content:
+                    $ref: '#/components/schemas/announcementDetailsDto'
+        400:
+          # Некорректный формат идентификатора
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getAnnouncementDetailsForbidden
+                properties:
+                  code:
+                    # detailsAccessForbidden
+                    $ref: '#/components/schemas/getAnnouncementDetailsResponses'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getAnnouncementDetailsNotFound
+                properties:
+                  code:
+                    # announcementDoesNotExist
+                    $ref: '#/components/schemas/getAnnouncementDetailsResponses'
+        500:
+          description: Internal Server Error
+
+  /api/bulletin-board-service/announcements/get-update-content/{id}:
+    get:
+      tags: [ "announcements api" ]
+      operationId: getAnnouncementUpdateContent
+      summary: Получить данные для редактирования объявления
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Идентификатор объявления
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getAnnouncementUpdateContentOk
+                properties:
+                  content:
+                    $ref: '#/components/schemas/contentForAnnouncementUpdatingDto'
+        400:
+          # Некорректный формат идентификатора
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getAnnouncementUpdateContentForbidden
+                properties:
+                  code:
+                    # getAnnouncementUpdateContentForbidden
+                    $ref: '#/components/schemas/getAnnouncementUpdateContentResponses'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getAnnouncementUpdateContentNotFound
+                properties:
+                  code:
+                    # announcementDoesNotExist
+                    $ref: '#/components/schemas/getAnnouncementUpdateContentResponses'
+        500:
+          description: Internal Server Error
+
+
+  /announcements/addView:
+    post:
+      tags: [ Announcements ]
+      operationId: addViewToAnnouncement
+      summary: Добавить просмотр объявлению
+      parameters:
+        - in: header
+          name: X-User-Id
+          required: true
+          schema:
+            description: Идентификатор пользователя
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/announcementIdentifierDto'
+      responses:
+        200:
+          description: Ok
+        401:
+          description: Unauthorized
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                title: addViewToAnnouncementNotFound
+                properties:
+                  code:
+                    # announcementDoesNotExist
+                    $ref: '#/components/schemas/addViewToAnnouncementResponses'
+        500:
+          description: Internal Server Error
+
+  /api/bulletin-board-service/announcements/update:
+    put:
+      tags: [ "announcements api" ]
+      operationId: updateAnnouncement
+      summary: Редактировать объявление
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updateAnnouncementDto'
+      responses:
+        200:
+          description: Ok
+        400:
+          description: Bad Request
+          # Описанные ниже коды + некорректный формат идентификатора
+          content:
+            application/json:
+              schema:
+                type: object
+                title: updateAnnouncementBadRequest
+                properties:
+                  code:
+                    # contentEmpty
+                    # audienceEmpty
+                    $ref: '#/components/schemas/updateAnnouncementResponses'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: updateAnnouncementForbidden
+                properties:
+                  code:
+                    # announcementEditingForbidden
+                    $ref: '#/components/schemas/updateAnnouncementResponses'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                title: updateAnnouncementNotFound
+                properties:
+                  code:
+                    # announcementDoesNotExist
+                    # attachmentDoesNotExist
+                    # pieceOfAudienceDoesNotExist
+                    $ref: '#/components/schemas/updateAnnouncementResponses'
+        409:
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                title: updateAnnouncementConflict
+                properties:
+                  code:
+                    # delayedPublishMomentIsInPast
+                    # delayedHideMomentIsInPast
+                    # autoHidingAnAlreadyHiddenAnnouncement
+                    # autoPublishingPublishedAndNonHiddenAnnouncement
+                    # cannotDetachSurvey
+                    $ref: '#/components/schemas/updateAnnouncementResponses'
+        500:
+          description: Internal Server Error
+
+  /api/bulletin-board-service/announcements/delete:
+    delete:
+      tags: [ "announcements api" ]
+      operationId: deleteAnnouncement
+      summary: Удалить объявление
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/announcementIdentifierDto'
+      responses:
+        200:
+          description: Ok
+        400:
+          # Некорректный формат идентификатора
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: deleteAnnouncementForbidden
+                properties:
+                  code:
+                    # announcementDeletionForbidden
+                    $ref: '#/components/schemas/deleteAnnouncementResponses'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                title: deleteAnnouncementNotFound
+                properties:
+                  code:
+                    # announcementDoesNotExist
+                    $ref: '#/components/schemas/deleteAnnouncementResponses'
+        500:
+          description: Internal Server Error
+
+  # опубликованные объявления
+  /api/bulletin-board-service/announcements/published/get-list:
+    get:
+      tags: [ "announcements api" ]
+      operationId: getPostedAnnouncementList
+      summary: Получить список опубликованных объявлений
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getPostedAnnouncementListOk
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/announcementSummaryDto'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getPostedAnnouncementListForbidden
+                properties:
+                  code:
+                    # postedAnnouncementsListAccessForbidden
+                    $ref: '#/components/schemas/getPostedAnnouncementListResponses'
+        500:
+          description: Internal Server Error
+
+  /api/bulletin-board-service/announcements/published/hide:
+    post:
+      tags: [ "announcements api" ]
+      operationId: hidePostedAnnouncement
+      summary: Скрыть опубликованное объявление
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/announcementIdentifierDto'
+      responses:
+        200:
+          description: Ok
+        400:
+          # Некорректный формат идентификатора
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: hidePostedAnnouncementForbidden
+                properties:
+                  code:
+                    # announcementHidingForbidden
+                    $ref: '#/components/schemas/hidePostedAnnouncementResponses'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                title: hidePostedAnnouncementNotFound
+                properties:
+                  code:
+                    # announcementDoesNotExist
+                    $ref: '#/components/schemas/hidePostedAnnouncementResponses'
+        409:
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                title: hidePostedAnnouncementConflict
+                properties:
+                  code:
+                    # announcementAlreadyHidden
+                    # announcementNotYetPublished
+                    $ref: '#/components/schemas/hidePostedAnnouncementResponses'
+        500:
+          description: Internal Server Error
+
+  # скрытые объявления
+  /api/bulletin-board-service/announcements/hidden/get-list:
+    get:
+      tags: [ "announcements api" ]
+      operationId: getHiddenAnnouncementList
+      summary: Получить список скрытых объявлений
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getHiddenAnnouncementListOk
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/announcementSummaryDto'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getHiddenAnnouncementListForbidden
+                properties:
+                  code:
+                    # hiddenAnnouncementsListAccessForbidden
+                    $ref: '#/components/schemas/getHiddenAnnouncementListResponses'
+        500:
+          description: Internal Server Error
+
+  /api/bulletin-board-service/announcements/hidden/restore:
+    post:
+      tags: [ "announcements api" ]
+      operationId: restoreHiddenAnnouncement
+      summary: Восстановить скрытое объявление
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/announcementIdentifierDto'
+      responses:
+        200:
+          description: Ok
+        400:
+          # Некорректный формат идентификатора
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: restoreHiddenAnnouncementForbidden
+                properties:
+                  code:
+                    # restoreForbidden
+                    $ref: '#/components/schemas/restoreHiddenAnnouncementResponses'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                title: restoreHiddenAnnouncementNotFound
+                properties:
+                  code:
+                    # announcementDoesNotExist
+                    $ref: '#/components/schemas/restoreHiddenAnnouncementResponses'
+        409:
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                title: restoreHiddenAnnouncementConflict
+                properties:
+                  code:
+                    # announcementNotHidden
+                    $ref: '#/components/schemas/restoreHiddenAnnouncementResponses'
+        500:
+          description: Internal Server Error
+
+  # объявления с отложенной публикацией
+  /api/bulletin-board-service/announcements/delayed-publishing/get-list:
+    get:
+      tags: [ "announcements api" ]
+      operationId: getDelayedPublishingAnnouncementList
+      summary: Получить список объявлений, ожидающих отложенную публикацию
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getDelayedPublishingAnnouncementListOk
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/announcementSummaryDto'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getDelayedPublishingAnnouncementListForbidden
+                properties:
+                  code:
+                    # getDelayedPublishingAnnouncementListResponses
+                    $ref: '#/components/schemas/getDelayedPublishingAnnouncementListResponses'
+        500:
+          description: Internal Server Error
+
+  /api/bulletin-board-service/announcements/delayed-publishing/publish-immediately:
+    post:
+      tags: [ "announcements api" ]
+      operationId: publishImmediatelyDelayedPublishingAnnouncement
+      summary: Сразу опубликовать отложенное объявление
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/announcementIdentifierDto'
+      responses:
+        200:
+          description: Ok
+        400:
+          # Некорректный формат идентификатора
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: publishImmediatelyDelayedPublishingAnnouncementForbidden
+                properties:
+                  code:
+                    # immediatePublishingForbidden
+                    $ref: '#/components/schemas/publishImmediatelyDelayedAnnouncementResponses'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                title: publishImmediatelyDelayedPublishingAnnouncementNotFound
+                properties:
+                  code:
+                    # announcementDoesNotExist
+                    $ref: '#/components/schemas/publishImmediatelyDelayedAnnouncementResponses'
+        500:
+          description: Internal Server Error
+
+  # объявления с отложенным сокрытием
+  /api/bulletin-board-service/announcements/delayed-hidden/get-list:
+    get:
+      tags: [ "announcements api" ]
+      operationId: getDelayedHiddenAnnouncementList
+      summary: Получить список объявлений, ожидающих отложенное сокрытие
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getDelayedHiddenAnnouncementListOk
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/announcementSummaryDto'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getDelayedHiddenAnnouncementListForbidden
+                properties:
+                  code:
+                    # getDelayedHiddenAnnouncementListAccessForbidden
+                    $ref: '#/components/schemas/getDelayedHiddenAnnouncementListResponses'
+        500:
+          description: Internal Server Error
+
+  ## surveys
+  /api/bulletin-board-service/surveys/create:
+    post:
+      operationId: createSurvey
+      summary: Создать опрос
+      tags: [ "surveys api" ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createSurveyDto'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                title: createSurveyCreated
+                properties:
+                  content:
+                    $ref: '#/components/schemas/surveyIdentifierDto'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: createSurveyForbidden
+                properties:
+                  code:
+                    # createSurveyForbidden
+                    $ref: '#/components/schemas/createSurveyResponses'
+        500:
+          description: Internal Server Error
+
+  /api/bulletin-board-service/surveys/close-survey:
+    post:
+      operationId: closeSurvey
+      summary: Закрыть опрос
+      tags: [ "surveys api" ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/surveyIdentifierDto'
+      responses:
+        200:
+          description: Ok
+        400:
+          # Некорректный формат идентификатора
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: closeSurveyForbidden
+                properties:
+                  code:
+                    # surveyClosingForbidden
+                    $ref: '#/components/schemas/closeSurveyResponses'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                title: closeSurveyNotFound
+                properties:
+                  code:
+                    # surveyDoesNotExist
+                    $ref: '#/components/schemas/closeSurveyResponses'
+        409:
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                title: closeSurveyConflict
+                properties:
+                  code:
+                    # surveyAlreadyClosed
+                    $ref: '#/components/schemas/closeSurveyResponses'
+        500:
+          description: Internal Server Error
+
+
+  /api/bulletin-board-service/surveys/vote:
+    post:
+      operationId: voteInSurvey
+      summary: Проголосовать в опросе
+      tags: [ "surveys api" ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/voteInSurveyDto'
+      responses:
+        200:
+          description: Ok
+        400:
+          # Некорректный формат идентификатора
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: voteInQuestionForbidden
+                properties:
+                  code:
+                    # votingForbidden
+                    $ref: '#/components/schemas/voteInSurveyResponses'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                title: voteInQuestionNotFound
+                properties:
+                  code:
+                    # surveyDoesNotExist
+                    $ref: '#/components/schemas/voteInSurveyResponses'
+        409:
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                title: voteInQuestionConflict
+                properties:
+                  code:
+                    # surveyClosed
+                    # answerAlreadyVoted
+                    # cannotSelectMultipleAnswersInSingleChoiceQuestion
+                    # presentedQuestionsDoesntMatchSurveyQuestions
+                    # presentedVotesDoesntMatchQuestionAnswers
+                    $ref: '#/components/schemas/voteInSurveyResponses'
+        500:
+          description: Internal Server Error
+
+  ## usergroups
+  /api/bulletin-board-service/usergroups/get-create-content:
+    get:
+      tags: [ "usergroups api" ]
+      operationId: getUsergroupCreateContent
+      summary: Получить данные для создания группы пользователей
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getUsergroupCreateContentOk
+                properties:
+                  content:
+                    $ref: '#/components/schemas/getUsergroupCreateContentDto'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: createUsergroupForbidden
+                properties:
+                  code:
+                    # getUsergroupCreateContentForbidden
+                    $ref: '#/components/schemas/getUsergroupCreateContentResponses'
+        500:
+          description: Internal Server Error
+
+  /api/bulletin-board-service/usergroups/create:
+    post:
+      tags: [ "usergroups api" ]
+      operationId: createUsergroup
+      summary: Создать группу пользователей
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/createUserGroupDto'
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                title: createUsergroupCreated
+                properties:
+                  content:
+                    $ref: '#/components/schemas/usergroupIdentifierDto'
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                title: createUsergroupBadRequest
+                properties:
+                  code:
+                    # nameIsNullOrWhitespace
+                    $ref: '#/components/schemas/createUsergroupResponses'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: createUsergroupForbidden
+                properties:
+                  code:
+                    # usergroupCreationForbidden
+                    $ref: '#/components/schemas/createUsergroupResponses'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                title: createUsergroupNotFound
+                properties:
+                  code:
+                    # usersDoNotExist
+                    # userGroupsDoNotExist
+                    $ref: '#/components/schemas/createUsergroupResponses'
+        409:
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                title: createUsergroupConflict
+                properties:
+                  code:
+                    # adminCannotBeOrdinaryMember
+                    # cyclicDependency
+                    $ref: '#/components/schemas/createUsergroupResponses'
+        500:
+          description: Internal Server Error
+
+  /api/bulletin-board-service/usergroups/get-owned-list:
+    get:
+      tags: [ "usergroups api" ]
+      operationId: getOwnedUsergroups
+      summary: Получение списка групп пользователей, администратором которой является пользователь, запрашивающий операцию
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getOwnedUsergroupsOk
+                properties:
+                  content:
+                    $ref: '#/components/schemas/usergroupListDto'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getOwnedUsergroupsForbidden
+                properties:
+                  code:
+                    # getOwnedUsergroupsForbidden
+                    $ref: '#/components/schemas/getOwnedUsergroupsResponses'
+        500:
+          description: Internal Server Error
+
+  /api/bulletin-board-service/usergroups/get-owned-hierarchy:
+    get:
+      tags: [ "usergroups api" ]
+      operationId: getOwnedHierarchy
+      summary: Получение иерархии управляемых групп пользователей для пользователя
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getOwnedHierarchyOk
+                properties:
+                  content:
+                    $ref: '#/components/schemas/usergroupHierarchyDto'
+        400:
+          # Некорректный формат идентификатора
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getOwnedHierarchyForbidden
+                properties:
+                  code:
+                    # getUsergroupHierarchyForbidden
+                    $ref: '#/components/schemas/getOwnedHierarchyResponses'
+        500:
+          description: Internal Server Error
+
+  /api/bulletin-board-service/usergroups/get-details/{id}:
+    get:
+      tags: [ "usergroups api" ]
+      operationId: getUsergroupDetails
+      summary: Получение подробной информации о группе пользователей
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Идентификатор группы пользователей
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getUsergroupDetailsOk
+                properties:
+                  content:
+                    $ref: '#/components/schemas/userGroupDetailsDto'
+        400:
+          # Некорректный формат идентификатора
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getUsergroupDetailsForbidden
+                properties:
+                  code:
+                    # getUsergroupDetailsForbidden
+                    $ref: '#/components/schemas/getUsergroupDetailsResponses'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getUsergroupDetailsNotFound
+                properties:
+                  code:
+                    # userGroupDoesNotExist
+                    $ref: '#/components/schemas/getUsergroupDetailsResponses'
+        500:
+          description: Internal Server Error
+
+  /api/bulletin-board-service/usergroups/get-update-content/{id}:
+    get:
+      tags: [ "usergroups api" ]
+      operationId: getUsergroupUpdateContent
+      summary: Получение данных для редактирования группы пользователей
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: Идентификатор группы пользователей
+      responses:
+        200:
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getUsergroupUpdateContentOk
+                properties:
+                  content:
+                    $ref: '#/components/schemas/contentForUserGroupEditingDto'
+        400:
+          # Некорректный формат идентификатора
+          description: Bad Request
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getUsergroupUpdateContentForbidden
+                properties:
+                  code:
+                    # getUsergroupUpdateContentForbidden
+                    $ref: '#/components/schemas/contentForUserGroupEditingResponses'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                title: getUsergroupUpdateContentNotFound
+                properties:
+                  code:
+                    # userGroupDoesNotExist
+                    $ref: '#/components/schemas/contentForUserGroupEditingResponses'
+        500:
+          description: Internal Server Error
+
+  /api/bulletin-board-service/usergroups/update:
+    put:
+      tags: [ "usergroups api" ]
+      operationId: updateUsergroup
+      summary: Редактирование группы пользователей
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/updateUserGroupDto'
+      responses:
+        200:
+          description: Ok
+        400:
+          description: Bad Request
+          # Описанные ниже коды + некорректный формат идентификатора
+          content:
+            application/json:
+              schema:
+                type: object
+                title: updateUsergroupBadRequest
+                properties:
+                  code:
+                    # nameIsNullOrWhitespace
+                    $ref: '#/components/schemas/updateUsergroupResponses'
+        401:
+          description: Unauthorized
+        403:
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                title: updateUsergroupForbidden
+                properties:
+                  code:
+                    # updateUsergroupForbidden
+                    $ref: '#/components/schemas/updateUsergroupResponses'
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                title: updateUsergroupNotFound
+                properties:
+                  code:
+                    # usersDoNotExist
+                    $ref: '#/components/schemas/updateUsergroupResponses'
+        409:
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                title: updateUsergroupConflict
+                properties:
+                  code:
+                    # adminCannotBeOrdinaryMember
+                    $ref: '#/components/schemas/updateUsergroupResponses'
+        500:
+          description: Internal Server Error
+
+  /api/bulletin-board-service/usergroups/delete:
+    delete:
+      tags: [ "usergroups api" ]
+      operationId: deleteUsergroup
+      summary: Удалить группу пользователей
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/usergroupIdentifierDto'
+      responses:
+        200:
+          description: Ok
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                title: deleteUsergroupBadRequest
+                properties:
+                  code:
+                    # incorrectIdentifierFormat
+                    $ref: '#/components/schemas/deleteUsergroupResponses'
+        401:
+          description: Unauthorized
+        403:
+          # Некорректный формат идентификатора
+          description: Forbidden
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                title: deleteUsergroupNotFound
+                properties:
+                  code:
+                    # userGroupDoesNotExist
+                    $ref: '#/components/schemas/deleteUsergroupResponses'
+        500:
+          description: Internal Server Error
+
+
 components:
   schemas:
     AddStudentInfoDTO:
@@ -876,3 +2062,1259 @@ components:
         - "id"
         - "firstName"
         - "secondName"
+
+
+
+    # bulletin board
+    ## announcements
+    createAnnouncementDto:
+      type: object
+      properties:
+        content:
+          description: Текстовое содержимое объявления
+          type: string
+        userIds:
+          description: Идентификаторы пользователей, для которых создается объявление
+          type: array
+          items:
+            type: string
+            format: uuid
+            uniqueItems: true
+          minItems: 1
+        attachmentIds:
+          description: Идентификаторы вложений, прикрепляемых к объявлению
+          type: array
+          items:
+            type: string
+            format: uuid
+            uniqueItems: true
+        delayedPublishingAt:
+          description: Срок отложенной публикации объявления
+          type: string
+          format: date-time
+          nullable: true
+          default: null
+        delayedHidingAt:
+          description: Срок отложенного сокрытия объявления
+          type: string
+          format: date-time
+          nullable: true
+          default: null
+
+    announcementIdentifierDto:
+      description: Идентификатор объявления
+      type: string
+      format: uuid
+
+    announcementSummaryDto:
+      type: object
+      properties:
+        id:
+          description: Идентификатор объявления
+          type: string
+          format: uuid
+        authorName:
+          description: Автор объявления
+          type: string
+        content:
+          description: Текстовое содержимое объявления
+          type: string
+        publishedAt:
+          description: Время публикации объявления
+          type: string
+          format: date-time
+          nullable: true
+        hiddenAt:
+          description: Время сокрытия объявления
+          type: string
+          format: date-time
+          nullable: true
+        delayedPublishingAt:
+          description: Момент отложенной публикации объявления
+          type: string
+          format: date-time
+          nullable: true
+        delayedHidingAt:
+          description: Момент отложенного сокрытия объявления
+          type: string
+          format: date-time
+          nullable: true
+        viewsCount:
+          description: Количество просмотревших объявление пользователей
+          type: integer
+          minimum: 0
+        audienceSize:
+          description: Размер аудитории объявления
+          type: integer
+          minimum: 0
+        surveys:
+          description: Массив опросов, прикрепленных к объявлению
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/surveyDetailsDto'
+
+    announcementDetailsDto:
+      type: object
+      properties:
+        id:
+          description: Идентификатор объявления
+          type: string
+          format: uuid
+        content:
+          description: Текстовое содержимое объявления
+          type: string
+        authorName:
+          description: Автор объявления
+          type: string
+        viewsCount:
+          description: Количество просмотревших объявление пользователей
+          type: integer
+          minimum: 0
+        audienceSize:
+          description: Размер аудитории объявления
+          type: integer
+          minimum: 0
+        surveys:
+          description: Массив опросов объявления
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/surveyDetailsDto'
+        publishedAt:
+          description: Момент публикации объявления. Объявление не является опубликованным, если null
+          type: string
+          format: date-time
+          nullable: true
+          default: null
+        hiddenAt:
+          description: Момент сокрытия объявления. Объявление не является скрытым, если null
+          type: string
+          format: date-time
+          nullable: true
+          default: null
+        delayedHidingAt:
+          description: Момент отложенного сокрытия объявления. Объявление не будет скрыто автоматически, если null
+          type: string
+          format: date-time
+          nullable: true
+          default: null
+        delayedPublishingAt:
+          description: Момент отложенной публикации объявления. Объявление не будет опубликовано автоматически, если null
+          type: string
+          format: date-time
+          nullable: true
+          default: null
+        audience:
+          #          $ref: '#/components/schemas/announcementAudienceDto'
+          description: Аудитория объявления
+          type: array
+          items:
+            $ref: '#/components/schemas/checkableUserSummaryDto'
+
+    contentForAnnouncementUpdatingDto:
+      type: object
+      properties:
+        id:
+          description: Идентификатор объявления
+          type: string
+          format: uuid
+        authorName:
+          description: Автор объявления
+          type: string
+        viewsCount:
+          description: Количество просмотревших объявление пользователей
+          type: integer
+          minimum: 0
+        audienceSize:
+          description: Размер аудитории объявления
+          type: integer
+          minimum: 0
+        content:
+          description: Текстовое содержимое объявления
+          type: string
+        audienceHierarchy:
+          $ref: '#/components/schemas/usergroupHierarchyDto'
+        surveys:
+          description: Массив опросов объявления
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/surveyDetailsDto'
+        publishedAt:
+          description: Момент публикации объявления. Объявление не является опубликованным, если null
+          type: string
+          format: date-time
+          nullable: true
+          default: null
+        hiddenAt:
+          description: Момент сокрытия объявления. Объявление не является скрытым, если null
+          type: string
+          format: date-time
+          nullable: true
+          default: null
+        delayedHidingAt:
+          description: Момент отложенного сокрытия объявления. Объявление не будет скрыто автоматически, если null
+          type: string
+          format: date-time
+          nullable: true
+          default: null
+        delayedPublishingAt:
+          description: Момент отложенной публикации объявления. Объявление не будет опубликовано автоматически, если null
+          type: string
+          format: date-time
+          nullable: true
+          default: null
+
+    updateAnnouncementDto:
+      type: object
+      required:
+        - id
+        - delayedPublishingAtChanged
+        - delayedHidingAtChanged
+      properties:
+        id:
+          description: Идентификатор обновляемого объявления
+          type: string
+          format: uuid
+        content:
+          description: Текстовое содержимое объявления. Null, если значение свойства не изменилось
+          type: string
+          nullable: true
+          default: null
+        audienceIds:
+          $ref: '#/components/schemas/updateIdentifierListDto'
+        attachmentIds:
+          $ref: '#/components/schemas/updateIdentifierListDto'
+        delayedPublishingAtChanged:
+          description: Было ли изменено значение момента отложенной публикации
+          type: boolean
+        delayedPublishingAt:
+          description: Момент отложенной публикации объявления. Null, если отложенная публикация не предполагается
+          type: string
+          format: date-time
+          nullable: true
+          default: null
+        delayedHidingAtChanged:
+          description: Было ли изменено значение момента отложенного сокрытия
+          type: boolean
+        delayedHidingAt:
+          description: Момент отложенного сокрытия объявления. Null, если отложенное сокрытие не предполагается
+          type: string
+          format: date-time
+          nullable: true
+          default: null
+
+    createAnnouncementResponses:
+      type: string
+      enum:
+        # 400
+        - audienceNullOrEmpty
+        - contentNullOrEmpty
+        # 403
+        - announcementCreationForbidden
+        # 404
+        - attachmentsDoNotExist
+        - pieceOfAudienceDoesNotExist
+        # 409
+        - delayedPublishingMomentIsInPast
+        - delayedHidingMomentIsInPast
+        - delayedPublishingMomentAfterDelayedHidingMoment
+      description: >
+        Ответы:
+          audienceNullOrEmpty - Список аудитории null или пустой
+          contentNullOrEmpty - Текстовое содержимое объявления является null, пустым или состоит только из пробельных символов
+          announcementCreationForbidden - Пользователь не имеет права создать объявление
+          attachmentsDoNotExist - В качестве одного или нескольких из id вложений прикреплен несуществующий в базе id
+          pieceOfAudienceDoesNotExist - В качестве одного или нескольких из id пользователей прикреплен несуществующий в базе id
+          delayedPublishingMomentIsInPast - Момент отложенной публикации уже наступил в прошлом
+          delayedHidingMomentIsInPast - Момент автоматического сокрытия уже наступил в прошлом
+          delayedPublishingMomentAfterDelayedHidingMoment - Момент отложенной публикации наступит после момента отложенного сокрытия
+
+    getAnnouncementDetailsResponses:
+      type: string
+      enum:
+        # 403
+        - detailsAccessForbidden
+        # 404
+        - announcementDoesNotExist
+      description: >
+        Ответы:
+          detailsAccessForbidden - Пользователь не имеет права просмотреть подробности объявления
+          announcementDoesNotExist - Объявление не существует
+
+    addViewToAnnouncementResponses:
+      type: string
+      enum:
+        # 404
+        - announcementDoesNotExist
+      description: >
+        Ответы:
+          announcementDoesNotExist - Объявление не существует 
+
+    getAnnouncementUpdateContentResponses:
+      type: string
+      enum:
+        # 403
+        - getAnnouncementUpdateContentForbidden
+        # 404
+        - announcementDoesNotExist
+      description: >
+        Ответы:
+          getAnnouncementUpdateContentForbidden - Пользователь не имеет права получить данные для редактирования объявление
+          announcementDoesNotExist - Объявление не существует
+
+    updateAnnouncementResponses:
+      type: string
+      enum:
+        # 400
+        - contentEmpty
+        - audienceEmpty
+        # 403
+        - announcementEditingForbidden
+        # 404
+        - announcementDoesNotExist
+        - attachmentsDoNotExist
+        - pieceOfAudienceDoesNotExist
+        # 409
+        - delayedPublishingMomentIsInPast
+        - delayedHidingMomentIsInPast
+        - autoHidingAnAlreadyHiddenAnnouncement
+        - autoPublishingPublishedAndNonHiddenAnnouncement
+        - cannotDetachSurvey
+      description: >
+        Ответы:
+          contentEmpty - Текстовое содержимое объявления пустое или состоит только из пробельных символов
+          audienceEmpty - Аудитория пользователей пуста
+          announcementEditingForbidden - Пользователь не имеет права изменить объявление
+          announcementDoesNotExist - В качестве id объявления прикреплен несуществующий в базе id
+          attachmentsDoNotExist - В качестве одного или нескольких из id вложений прикреплен несуществующий в базе id
+          pieceOfAudienceDoesNotExist - В качестве одного или нескольких из id пользователей прикреплен несуществующий в базе id
+          delayedPublishingMomentIsInPast - Момент отложенной публикации уже наступил в прошлом
+          delayedHidingMomentIsInPast - Момент отложенного сокрытия уже наступил в прошлом
+          autoHidingAnAlreadyHiddenAnnouncement - Попытка задать срок автоматического сокрытия объявлению, которое уже скрыто
+          autoPublishingPublishedAndNonHiddenAnnouncement - Попытка задать срок автоматической публикации объявлению, которое уже было опубликовано и в настоящий момент не является скрытым
+          cannotDetachSurvey - Открепление опросов запрещено
+
+    deleteAnnouncementResponses:
+      type: string
+      enum:
+        # 403
+        - announcementDeletionForbidden
+        # 409
+        - announcementDoesNotExist
+      description: >
+        Ответы:
+          announcementDeletionForbidden - Пользователь не имеет права удалить объявление
+          announcementDoesNotExist - Объявление не существует
+
+    getPostedAnnouncementListResponses:
+      type: string
+      enum:
+        # 403
+        - postedAnnouncementsListAccessForbidden
+      description: >
+        Ответы:
+          postedAnnouncementsListAccessForbidden - Пользователь не имеет права просматривать списки опубликованных объявлений
+
+    hidePostedAnnouncementResponses:
+      type: string
+      enum:
+        # 403
+        - announcementHidingForbidden
+        # 404
+        - announcementDoesNotExist
+        # 409
+        - announcementAlreadyHidden
+        - announcementNotYetPublished
+      description: >
+        Ответы:
+          announcementHidingForbidden - Пользователь не имеет права скрыть объявление
+          announcementDoesNotExist - Объявление не существует
+          announcementAlreadyHidden - Объявление уже скрыто
+          announcementNotYetPublished - Объявление еще не опубликовано
+
+    getHiddenAnnouncementListResponses:
+      type: string
+      enum:
+        # 403
+        - hiddenAnnouncementsListAccessForbidden
+      description: >
+        Ответы:
+          hiddenAnnouncementsListAccessForbidden - Пользователь не имеет права просматривать списки скрытых объявлений
+
+    restoreHiddenAnnouncementResponses:
+      type: string
+      enum:
+        # 403
+        - restoreForbidden
+        # 404
+        - announcementDoesNotExist
+        # 409
+        - announcementNotHidden
+      description: >
+        Ответы:
+          restoreForbidden - Пользователь не имеет права восстановить скрытое объявление
+          announcementDoesNotExist - Объявление не существует
+          announcementNotHidden - Объявление не является скрытым
+
+    getDelayedPublishingAnnouncementListResponses:
+      type: string
+      enum:
+        # 403
+        - getDelayedPublishingAnnouncementListResponsesAccessForbidden
+      description: >
+        Ответы: 
+          getDelayedPublishingAnnouncementListResponsesAccessForbidden - Пользователь не имеет права просматривать списки объявлений, ожидающих отложенное сокрытие
+
+    publishImmediatelyDelayedAnnouncementResponses:
+      type: string
+      enum:
+        # 403
+        - immediatePublishingForbidden
+        # 404
+        - announcementDoesNotExist
+      description: >
+        Ответы: 
+          immediatePublishingForbidden - Пользователь не имеет права незамедлительно опубликовать отложенное объявление
+          announcementDoesNotExist - Объявление не существует
+
+    getDelayedHiddenAnnouncementListResponses:
+      type: string
+      enum:
+        # 403
+        - getDelayedHiddenAnnouncementListAccessForbidden
+      description: >
+        Ответы: 
+          getDelayedHiddenAnnouncementListAccessForbidden - Пользователь не имеет права просматривать списки объявлений, ожидающих отложенное сокрытие
+
+    ## surveys
+    createSurveyDto:
+      type: object
+      properties:
+        questions:
+          description: Вопросы опроса
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/createQuestionDto'
+        isAnonymous:
+          description: Анонимен ли опрос
+          type: boolean
+        resultsOpenBeforeClosing:
+          description: Открыты ли результаты опроса до закрытия
+          type: boolean
+        voteUntil:
+          description: Срок окончания голосования. Null, если голосование не ограничено по сроку
+          type: string
+          format: date-time
+          nullable: true
+
+    surveyDetailsDto:
+      type: object
+      properties:
+        id:
+          description: Идентификатор опроса
+          type: string
+          format: uuid
+        isVotedByRequester:
+          description: Проголосовал ли в опросе пользователь, запросивший детали опроса
+          type: boolean
+        isOpen:
+          description: Открыт ли опрос
+          type: boolean
+          default: true
+        isAnonymous:
+          description: Анонимен ли опрос
+          type: boolean
+          default: false
+        resultsOpenBeforeClosing:
+          description: Открыты ли результаты опроса до закрытия
+          type: boolean
+        voters:
+          description: Проголосовавшие в опросе пользователи
+          type: array
+          items:
+            $ref: '#/components/schemas/userSummaryDto'
+        autoClosingAt:
+          description: Время окончания голосования (если задано)
+          type: string
+          format: date-time
+          nullable: true
+        voteFinishedAt:
+          description: Фактическое время окончания голосования (если голосование завершено)
+          type: string
+          format: date-time
+          nullable: true
+        questions:
+          description: Вопросы опроса
+          type: array
+          items:
+            $ref: '#/components/schemas/questionDetailsDto'
+          minItems: 1
+
+    surveyIdentifierDto:
+      description: Идентификатор опроса
+      type: string
+      format: uuid
+
+    downloadSurveyResultsRequestDto:
+      description: DTO для запроса выгрузки результатов опроса
+      type: object
+      required:
+        - surveyId
+        - fileType
+      properties:
+        surveyId:
+          $ref: '#/components/schemas/surveyIdentifierDto'
+        fileType:
+          description: Тип файла с результатами опроса
+          type: string
+
+    voteInSurveyDto:
+      description: DTO для голосования в опросе
+      type: object
+      properties:
+        surveyId:
+          description: Идентификатор опроса
+          type: string
+          format: uuid
+        questionVotes:
+          description: Голоса за варианты ответов в каждом вопросе опроса
+          type: array
+          items:
+            $ref: '#/components/schemas/voteInQuestionDto'
+          minItems: 1
+
+    voteInQuestionDto:
+      description: DTO для голосования в вопросе опроса
+      type: object
+      properties:
+        questionId:
+          description: Идентификатор вопроса
+          type: string
+          format: uuid
+        answerIds:
+          description: Массив идентификаторов вариантов ответов
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: uuid
+            uniqueItems: true
+
+    surveyResultsDto:
+      description: Результаты опроса
+      type: object
+      properties:
+        voters:
+          $ref: '#/components/schemas/votersDto'
+        answerResults:
+          $ref: '#/components/schemas/answerResultsDto'
+
+    # question
+    createQuestionDto:
+      type: object
+      properties:
+        serial:
+          description: Порядковый номер вопроса в списке вопросов
+          type: integer
+          minimum: 0
+        content:
+          description: Содержимое вопроса
+          type: string
+        isMultipleChoiceAllowed:
+          description: Доступен ли выбор нескольких вариантов ответов
+          type: boolean
+        answers:
+          description: Варианты ответов
+          type: array
+          minItems: 2
+          items:
+            $ref: '#/components/schemas/createAnswerDto'
+
+    questionDetailsDto:
+      type: object
+      properties:
+        id:
+          description: Идентификатор вопроса
+          type: string
+          format: uuid
+        serial:
+          description: Порядковый номер вопроса в списке вопросов
+          type: integer
+          minimum: 0
+        content:
+          description: Текстовое содержимое вопроса
+          type: string
+        isMultipleChoiceAllowed:
+          description: Разрешен ли множественный выбор
+          type: boolean
+          default: false
+        answers:
+          description: Варианты ответов опроса
+          type: array
+          items:
+            $ref: '#/components/schemas/questionAnswerDetailsDto'
+          minItems: 2
+
+    questionAnswerDetailsDto:
+      type: object
+      properties:
+        id:
+          description: Идентификатор варианта ответа
+          type: string
+          format: uuid
+        serial:
+          description: Порядковый номер варианта ответов в списке вариантов ответов
+          type: integer
+          minimum: 0
+        content:
+          description: Текстовое содержимое варианта ответа
+          type: string
+        voters:
+          description: Список проголосовавших за вариант ответа пользователей. Пустой, если вариант ответа относится к анонимному опросу
+          type: array
+          items:
+            $ref: '#/components/schemas/userSummaryDto'
+        votersAmount:
+          description: Количество пользователей, проголосовавших за вариант ответа
+          type: integer
+          minimum: 0
+
+    # answer
+    createAnswerDto:
+      type: object
+      properties:
+        serial:
+          description: Порядковый номер варианта ответа в списке вариантов ответов
+          type: integer
+          minimum: 0
+        content:
+          description: текстовое содержимое варианта ответа
+          type: string
+
+    ### private
+    votersDto:
+      type: array
+      items:
+        $ref: '#/components/schemas/voterDto'
+
+    voterDto:
+      type: object
+      properties:
+        id:
+          description: Числовой идентификатор пользователя
+          type: integer
+        name:
+          description: Имя пользователя
+          type: string
+
+    answerResultsDto:
+      type: array
+      items:
+        $ref: '#/components/schemas/answerResultDto'
+
+    answerResultDto:
+      type: object
+      properties:
+        questionId:
+          description: Идентификатор варианта ответа
+          type: string
+          format: uuid
+        voterIds:
+          description: Числовые идентификаторы проголосовавших пользователей
+          type: array
+          items:
+            type: integer
+
+    createSurveyResponses:
+      type: string
+      enum:
+        # 403
+        - createSurveyForbidden
+        # 409
+        - surveyContainsQuestionSerialsDuplicates
+        - questionContainsAnswersSerialsDuplicates
+      description: >
+        Ответы:
+          createSurveyForbidden - Пользователь не имеет права создать опрос
+          surveyContainsQuestionSerialsDuplicates - Опрос содержит вопросы с одинаковыми порядковыми номерами
+          questionContainsAnswersSerialsDuplicates - Вопрос содержит варианты ответов с повторяющимися порядковыми номерами
+
+    getSurveyDetailsResponses:
+      type: string
+      enum:
+        # 403
+        - detailsAccessForbidden
+        # 404
+        - surveyDoesNotExist
+      description: >
+        Ответы:
+          detailsAccessForbidden - Пользователь не имеет права просмотреть подробности этого опроса
+          surveyDoesNotExist - Опрос не существует
+
+    closeSurveyResponses:
+      type: string
+      enum:
+        # 403
+        - surveyClosingForbidden
+        # 404
+        - surveyDoesNotExist
+        # 409
+        - surveyAlreadyClosed
+      description: >
+        Ответы:
+          surveyClosingForbidden - Пользователь не имеет права закрыть этот опрос
+          surveyDoesNotExist - Опрос не существует
+          surveyAlreadyClosed - Опрос уже закрыт
+
+    getSurveysResultsResponses:
+      type: string
+      enum:
+        # 403
+        - surveyResultsAccessForbidden
+        # 404
+        - surveyDoesNotExist
+        # 409
+        - announcementWithSurveyNotYetPublished
+      description: >
+        Ответы:
+          surveyResultsAccessForbidden - Пользователь не имеет права получить результаты этого опроса
+          surveyDoesNotExist - Опрос не существует
+          announcementWithSurveyNotYetPublished - Объявление с опросом еще не опубликовано
+
+    voteInSurveyResponses:
+      type: string
+      enum:
+        # 403
+        - votingForbidden
+        # 404
+        - surveyDoesNotExist
+        # 409
+        - surveyClosed
+        - surveyAlreadyVoted
+        - cannotSelectMultipleAnswersInSingleChoiceQuestion
+        - presentedQuestionsDoesntMatchSurveyQuestions
+        - presentedVotesDoesntMatchQuestionAnswers
+      description: >
+        Ответы:
+          votingForbidden - Пользователь не имеет права голосовать в опросе
+          surveyDoesNotExist - Опрос не существует
+          surveyClosed - Опрос закрыт
+          surveyAlreadyVoted - Голос в опросе уже отдан
+          cannotSelectMultipleAnswersInSingleChoiceQuestion - В вопросе с единственным выбором нельзя выбрать несколько вариантов ответов
+          presentedQuestionsDoesntMatchSurveyQuestions - Список представленных вопросов не соответствует фактическому списку вопросов опроса
+          presentedVotesDoesntMatchQuestionAnswers - Список выбранных вариантов ответов для одного или нескольких вопросов не включается в список вариантов ответов вопроса
+
+    cancelVoteInQuestionResponses:
+      type: string
+      enum:
+        # 403
+        - votingForbidden
+        # 404
+        - questionDoesNotExist
+        # 409
+        - surveyClosed
+        - surveyNotVoted
+      description: >
+        Ответы:
+          votingForbidden - Пользователь не имеет права голосовать в этом опросе
+          questionDoesNotExist - Вопрос не существует
+          surveyClosed - Опрос закрыт
+          surveyNotVoted - Пользователь не проголосовал в вопросе
+
+    ## usergroups
+    usergroupIdentifierDto:
+      description: Идентификатор группы пользователей
+      type: string
+      format: uuid
+
+    getUsergroupCreateContentDto:
+      description: Данные для создания группы пользователей
+      type: object
+      properties:
+        users:
+          description: Список пользователей, которые могут быть назначены администратором или участником группы пользователей
+          type: array
+          items:
+            $ref: '#/components/schemas/userSummaryDto'
+        usergroups:
+          description: Список групп пользователей, которые могут быть установлены в качестве родителей или потомков создаваемой группы пользователей. В списке отсутствуют корневые точки графа пользователей
+          type: array
+          items:
+            $ref: '#/components/schemas/userGroupSummaryDto'
+
+    createUserGroupDto:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          description: Название группы пользователей
+          type: string
+        adminId:
+          description: Идентификатор администратора группы пользователей
+          type: string
+          format: uuid
+          nullable: true
+        members:
+          description: Участники группы пользователей с правами
+          type: array
+          items:
+            $ref: '#/components/schemas/userIdWithMemberRightsDto'
+        parentIds:
+          description: Идентификаторы групп пользователей, являющихся родителями создаваемой
+          type: array
+          items:
+            type: string
+            format: uuid
+        childIds:
+          description: Идентификаторы групп пользователей, являющихся дочерними создаваемой
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    usergroupListDto:
+      type: array
+      items:
+        $ref: '#/components/schemas/userGroupSummaryDto'
+
+    userSummaryWithMemberRightsDto:
+      type: object
+      description: Пользователь с правами в группе пользователей
+      properties:
+        user:
+          $ref: '#/components/schemas/userSummaryDto'
+        rights:
+          $ref: "#/components/schemas/memberRightsDto"
+
+    userIdWithMemberRightsDto:
+      type: object
+      description: Идентификатор пользователя с правами в группе пользователей
+      required:
+        - userId
+      properties:
+        userId:
+          type: string
+          format: uuid
+        usergroupId:
+          type: string
+          format: uuid
+          nullable: true
+        rights:
+          $ref: "#/components/schemas/memberRightsDto"
+
+    memberRightsDto:
+      type: object
+      description: Права пользователя в группе пользователей
+      properties:
+        canViewAnnouncements:
+          type: boolean
+          default: true
+        canCreateAnnouncements:
+          type: boolean
+          default: false
+        canCreateSurveys:
+          type: boolean
+          default: false
+        canViewUserGroupDetails:
+          type: boolean
+          default: false
+        canCreateUserGroups:
+          type: boolean
+          default: false
+        canEditUserGroups:
+          type: boolean
+          default: false
+        canEditMembers:
+          type: boolean
+          default: false
+        canEditMemberRights:
+          type: boolean
+          default: false
+        canEditUserGroupAdmin:
+          type: boolean
+          default: false
+        canDeleteUserGroup:
+          type: boolean
+          default: false
+
+    userGroupSummaryDto:
+      type: object
+      description: Краткая информация о группе пользователей
+      properties:
+        id:
+          description: Идентификатор группы пользователей
+          type: string
+          format: uuid
+        name:
+          description: Название группы пользователей
+          type: string
+        adminName:
+          description: Имя администратора группы пользователей
+          type: string
+          nullable: true
+
+    usergroupHierarchyDto:
+      type: object
+      description: Иерархия групп пользователей
+      properties:
+        usergroups:
+          description: Список групп пользователей иерархии с включенными участниками
+          type: array
+          items:
+            $ref: '#/components/schemas/userGroupSummaryWithMembersDto'
+        roots:
+          description: Корни иерархии
+          type: array
+          items:
+            $ref: '#/components/schemas/userGroupHierarchyNodeDto'
+
+    userGroupHierarchyNodeDto:
+      type: object
+      description: Объект описывает положение группы пользователей в иерархии групп пользователей
+      properties:
+        id:
+          description: Идентификатор группы пользователей
+          type: string
+          format: uuid
+        children:
+          description: Дочерние группы пользователей
+          type: array
+          items:
+            $ref: '#/components/schemas/userGroupHierarchyNodeDto'
+
+    userGroupSummaryWithMembersDto:
+      type: object
+      description: Краткая информация о группе пользователей, включая ее участников
+      properties:
+        summary:
+          $ref: '#/components/schemas/userGroupSummaryDto'
+        members:
+          description: Список участников группы пользователей
+          type: array
+          items:
+            $ref: '#/components/schemas/checkableUserSummaryDto'
+
+    userGroupDetailsDto:
+      type: object
+      properties:
+        id:
+          description: Идентификатор группы пользователей
+          type: string
+          format: uuid
+        name:
+          description: Название группы пользователей
+          type: string
+        admin:
+          $ref: '#/components/schemas/userSummaryDto'
+        members:
+          description: Краткая информация об участниках группы пользователей, включая их права
+          type: array
+          items:
+            $ref: '#/components/schemas/userSummaryWithMemberRightsDto'
+        parents:
+          description: Родительские группы пользователей
+          type: array
+          items:
+            $ref: '#/components/schemas/userGroupSummaryDto'
+        children:
+          description: Дочерние группы пользователей
+          type: array
+          items:
+            $ref: '#/components/schemas/userGroupSummaryDto'
+
+    contentForUserGroupEditingDto:
+      type: object
+      description: Данные для редактирования группы пользователей
+      properties:
+        id:
+          description: Идентификатор группы пользователей
+          type: string
+          format: uuid
+        name:
+          description: Название группы пользователей
+          type: string
+        admin:
+          $ref: '#/components/schemas/userSummaryDto'
+        members:
+          description: Краткая информация об участниках группы пользователей, включая их права
+          type: array
+          items:
+            $ref: '#/components/schemas/userSummaryWithMemberRightsDto'
+        users:
+          description: Список пользователей, которые могут быть назначены администратором или добавлены в группу пользователей. В списке отсутствуют текущий администратор и участники группы пользователей
+          type: array
+          items:
+            $ref: '#/components/schemas/userSummaryDto'
+
+    updateUserGroupDto:
+      description: DTO для обновления группы пользователей
+      type: object
+      required:
+        - id
+        - adminChanged
+        - membersChanged
+      properties:
+        id:
+          description: Идентификатор группы пользователей
+          type: string
+          format: uuid
+        name:
+          description: Новое название группы пользователей
+          type: string
+          nullable: true
+          default: null
+        adminChanged:
+          description: Изменен ли администратор группы. True, если изменен
+          type: boolean
+        adminId:
+          description: Новый идентификатор администратора. Null отправляется для удаления администратора
+          type: string
+          format: uuid
+          nullable: true
+          default: null
+        members:
+          $ref: '#/components/schemas/updateMemberListDto'
+
+    updateMemberListDto:
+      description: DTO для редактирования списка пользователей в группе пользователей
+      type: object
+      nullable: true
+      properties:
+        idsToRemove:
+          description: Идентификаторы удаляемых участников
+          type: array
+          items:
+            type: string
+            format: uuid
+        newMembers:
+          description: Новые участники группы пользователей с правами
+          type: array
+          items:
+            $ref: '#/components/schemas/userIdWithMemberRightsDto'
+
+    addMembersToUsergroupDto:
+      type: object
+      properties:
+        userGroupId:
+          type: string
+          format: uuid
+        members:
+          $ref: '#/components/schemas/userIdWithMemberRightsDto'
+
+    deleteUsersFromUsergroupDto:
+      type: object
+      properties:
+        userGroupId:
+          type: string
+          format: uuid
+        memberIds:
+          $ref: '#/components/schemas/uniqueIdentifiers'
+
+    getUsergroupCreateContentResponses:
+      type: string
+      enum:
+        # 403
+        - getUsergroupCreateContentForbidden
+      description: >
+        Ответы:
+          getUsergroupCreateContentForbidden - Пользователь не имеет права получать данные для создания группы пользователей
+
+    createUsergroupResponses:
+      type: string
+      enum:
+        # 400
+        - nameIsNullOrWhitespace
+        # 403
+        - usergroupCreationForbidden
+        # 404
+        - usersDoNotExist
+        - userGroupsDoNotExist
+        # 409
+        - adminCannotBeOrdinaryMember
+        - cyclicDependency
+      description: >
+        Ответы:
+          nameIsNullOrWhitespace - Название группы пользователей null или состоит исключительно из пробельных символов
+          usergroupCreationForbidden - Пользователь не имеет права создать группу пользователей
+          usersDoNotExist - В качестве одного или нескольких id пользователей прикреплен несуществующий в базе id
+          userGroupsDoNotExist - В качестве одного или нескольких id групп пользователей прикреплен несуществующий в базе id
+          adminCannotBeOrdinaryMember - Идентификатор администратора передан в массиве идентификаторов участников
+          cyclicDependency - Группа пользователей не может быть создана, так как порождает цикл на графе групп пользователей
+
+    getAllUsergroupsResponses:
+      type: string
+      enum:
+        # 403
+        - getAllUsergroupsForbidden
+      description: >
+        Ответы:
+          getAllUsergroupsForbidden - Пользователь не имеет права получать список всех групп пользователей
+
+    getOwnedUsergroupsResponses:
+      type: string
+      enum:
+        # 403
+        - getOwnedUsergroupsForbidden
+      description: >
+        Ответы:
+          getOwnedUsergroupsForbidden - Пользователь не имеет права получать список групп пользователей, которыми управляет
+
+    getUsergroupDetailsResponses:
+      type: string
+      enum:
+        # 403
+        - getUsergroupDetailsForbidden
+        # 404
+        - userGroupDoesNotExist
+      description: >
+        Ответы:
+          getUsergroupDetailsForbidden - Пользователь не имеет права запрашивать детали группы пользователей
+          userGroupDoesNotExist - В качестве id группы пользователей прикреплен несуществующий в базе id     
+
+    contentForUserGroupEditingResponses:
+      type: string
+      enum:
+        # 403
+        - getUsergroupUpdateContentForbidden
+        # 404
+        - userGroupDoesNotExist
+      description: >
+        Ответы:
+        getUsergroupUpdateContentForbidden - Пользователь не имеет права запрашивать данные для редактирования групп пользователей
+        userGroupDoesNotExist - В качестве id группы пользователей прикреплен несуществующий в базе id
+
+    getOwnedHierarchyResponses:
+      type: string
+      enum:
+        # 403
+        - getUsergroupHierarchyForbidden
+      description: >
+        Ответы:
+          getUsergroupHierarchyForbidden - Пользователь не имеет права запрашивать иерархию групп пользователей
+
+    updateUsergroupResponses:
+      type: string
+      enum:
+        # 400
+        - nameIsNullOrWhitespace
+        # 403
+        - updateUsergroupForbidden
+        # 404
+        - usersDoNotExist
+        # 409
+        - adminCannotBeOrdinaryMember
+      description: >
+        Ответы:
+          nameIsNullOrWhitespace - Имя не содержит символов или содержит исключительно пробельные
+          updateUsergroupForbidden - Пользователь не имеет права редактировать группу пользователей
+          usersDoNotExist - В качестве одного или нескольких id пользователей прикреплен несуществующий в базе id
+          adminCannotBeOrdinaryMember - Идентификатор администратора передан в массиве идентификаторов участников
+
+    deleteUsergroupResponses:
+      type: string
+      enum:
+        # 403
+        - usergroupDeletionForbidden
+        # 404
+        - userGroupDoesNotExist
+      description: >
+        Ответы:
+          usergroupDeletionForbidden - Пользователь не имеет права удалить группу пользователей
+          userGroupDoesNotExist - В качестве id группы пользователей прикреплен несуществующий в базе id
+
+    addMembersToUsergroupResponses:
+      type: string
+      enum:
+        # 403
+        - addMembersToUsergroupForbidden
+        # 404
+        - userGroupDoesNotExist
+        - usersDoNotExist
+        # 409
+        - userAlreadyMember
+        - userIsAdmin
+      description: >
+        Ответы:
+          addMembersToUsergroupForbidden - Пользователь не имеет права добавить пользователя в группу пользователей
+          userGroupDoesNotExist - В качестве id группы пользователей прикреплен несуществующий в базе id
+          usersDoNotExist - В качестве одного или нескольких из id пользователей прикреплен несуществующий в базе id
+          userAlreadyMember - В качестве одного или нескольких из id прикреплен id пользователя, уже являющегося участником этой группы пользователей
+          userIsAdmin - В качестве одного из id прикреплен id пользователя, уже являющегося администратором этой группы пользователей
+
+    deleteMembersFromUsergroupResponses:
+      type: string
+      enum:
+        # 403
+        - removeUsersFromUsergroupForbidden
+        # 409
+        - userIsAdmin
+      description: >
+        Ответы:
+          addMembersToUsergroupForbidden - Пользователь не имеет права удалить пользователя из группы пользователей
+          userIsAdmin - В качестве одного из id прикреплен id пользователя, являющегося администратором этой группы пользователей
+
+    ## users
+    userSummaryDto:
+      type: object
+      nullable: true
+      properties:
+        id:
+          description: Идентификатор пользователя
+          type: string
+          format: uuid
+        firstName:
+          description: Имя пользователя
+          type: string
+        secondName:
+          description: Фамилия пользователя
+          type: string
+        patronymic:
+          description: Отчество пользователя
+          type: string
+          nullable: true
+
+    checkableUserSummaryDto:
+      type: object
+      nullable: true
+      properties:
+        id:
+          description: Идентификатор пользователя
+          type: string
+          format: uuid
+        firstName:
+          description: Имя пользователя
+          type: string
+        secondName:
+          description: Фамилия пользователя
+          type: string
+        patronymic:
+          description: Отчество пользователя
+          type: string
+          nullable: true
+        isChecked:
+          description: Выбран ли пользователь
+          type: boolean
+
+    ## common
+    uniqueIdentifiers:
+      description: Список уникальных идентификаторов
+      type: array
+      nullable: true
+      items:
+        type: string
+        format: uuid
+        uniqueItems: true
+
+    updateIdentifierListDto:
+      description: Объект для обновления списка прикрепленных идентификаторов. Null, если список идентификаторов не требуется изменять
+      type: object
+      nullable: true
+      properties:
+        toAdd:
+          $ref: '#/components/schemas/uniqueIdentifiers'
+        toRemove:
+          $ref: '#/components/schemas/uniqueIdentifiers'
