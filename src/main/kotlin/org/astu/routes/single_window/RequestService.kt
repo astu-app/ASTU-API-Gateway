@@ -17,7 +17,7 @@ fun Route.requestServiceDefinition(){
     route("/request-service", {
         tags = listOf("request-service")
     }){
-        templates(host, client)
+        templates(host, accountHost, client)
         requirementTypes(host, client)
         request(host, accountHost, client)
     }

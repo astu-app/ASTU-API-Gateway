@@ -36,7 +36,7 @@ class JWTApi(val client: HttpClient, private val basePath: String = "/") {
         return when (response.status) {
             HttpStatusCode.OK -> response.body<Tokens>()
             HttpStatusCode.BadRequest -> throw AuthServiceException(response.bodyAsText())
-            else -> throw AuthServiceException("Не удалось авторизоваться")
+            else -> throw AuthServiceException(response.bodyAsText())
         }
     }
 

@@ -11,6 +11,7 @@
  */
 package api.request.client.apis
 
+import api.account.client.models.AccountDTO
 import api.request.client.ErrorResponse
 import api.request.client.RequestServiceException
 import api.request.client.models.AddTemplateDTO
@@ -18,6 +19,7 @@ import api.request.client.models.TemplateDTO
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import java.util.*
 
@@ -51,9 +53,13 @@ class TemplateControllerApi(val client: HttpClient, private val basePath: String
      * @param accountId
      * @return kotlin.Array<TemplateDTO>
      */
-    suspend fun getTemplates(accountId: UUID): List<TemplateDTO> {
-        val response = client.get("${basePath}api/template/$accountId")
-
+    suspend fun getTemplates(accountId: UUID, accountDTO: AccountDTO): List<TemplateDTO> {
+        val response = client.post("${basePath}api/template/$accountId"){
+            contentType(ContentType.Application.Json)
+            setBody(accountDTO)
+        }
+        println(response.status)
+        println(response.bodyAsText())
         return when (response.status) {
             HttpStatusCode.OK -> response.body<List<TemplateDTO>>()
             else -> throw RequestServiceException("Не удалось получить список шаблонов")

@@ -1,5 +1,6 @@
 package org.astu.routes.single_window.routes
 
+import api.account.client.apis.AccountApi
 import api.request.client.apis.TemplateControllerApi
 import api.request.client.models.AddTemplateDTO
 import api.request.client.models.TemplateDTO
@@ -13,11 +14,11 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.astu.plugins.CustomUserPrincipal
-import org.astu.plugins.checkRole
 import java.util.*
 
-fun Route.templates(host: String, client: HttpClient) = route("/template") {
+fun Route.templates(host: String, accountHost: String, client: HttpClient)  = route("/template") {
     val api = TemplateControllerApi(client, host)
+    val accountApi = AccountApi(client, accountHost)
 
     /**
      * Получение списка шаблонов для пользователя
@@ -34,14 +35,15 @@ fun Route.templates(host: String, client: HttpClient) = route("/template") {
         call.principal<CustomUserPrincipal>()?.also { principal ->
             val id = UUID.fromString(principal.id)
             runCatching {
-                api.getTemplates(id)
+                val account = accountApi.getAccount(principal.id)
+                api.getTemplates(id, account)
             }.onFailure {
+                println(it.message)
+                println(it)
                 call.respondText(it.message ?: "", status = HttpStatusCode.BadRequest)
             }.onSuccess {
                 call.respond(it)
             }
-            val response = api.getTemplates(id)
-            call.respond(response)
         }
     }
 
