@@ -2,6 +2,10 @@ package org.astu.routes.bullletinBoard.routes
 
 import api.bulletinBoard.client.models.announcements.CreateAnnouncementDto
 import api.bulletinBoard.client.models.announcements.UpdateAnnouncementDto
+import io.github.smiley4.ktorswaggerui.dsl.delete
+import io.github.smiley4.ktorswaggerui.dsl.get
+import io.github.smiley4.ktorswaggerui.dsl.post
+import io.github.smiley4.ktorswaggerui.dsl.put
 import io.ktor.client.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -18,7 +22,10 @@ fun Route.announcements(bulletinBoardHost: String, client: HttpClient) = route("
      * Создать объявление
      * @OpenAPITag bulletin board api
      */
-    post("create") {
+    post("create", {
+        summary = "Создать объявление"
+        tags = listOf("bulletin-board-service")
+    }) {
         val dto = call.receive<CreateAnnouncementDto>()
         call.principal<CustomUserPrincipal>()?.also { principal ->
             val response = announcementsApi.createAnnouncement(dto, principal.id)
@@ -30,7 +37,10 @@ fun Route.announcements(bulletinBoardHost: String, client: HttpClient) = route("
      * Получить подробности о выбранном объявлении
      * @OpenAPITag bulletin board api
      */
-    get("get-details/{id}") {
+    get("get-details/{id}", {
+        summary = "Получить подробности о выбранном объявлении"
+        tags = listOf("bulletin-board-service")
+    }) {
         val announcementId = call.parameters["id"] ?: throw IllegalArgumentException("announcement id is required")
         call.principal<CustomUserPrincipal>()?.also { principal ->
             val response = announcementsApi.getAnnouncementDetails(announcementId, principal.id)
@@ -42,7 +52,10 @@ fun Route.announcements(bulletinBoardHost: String, client: HttpClient) = route("
      * Получить данные для редактирования объявления
      * @OpenAPITag bulletin board api
      */
-    get("get-update-content/{id}") {
+    get("get-update-content/{id}", {
+        summary = "Получить данные для редактирования объявления"
+        tags = listOf("bulletin-board-service")
+    }) {
         val announcementId = call.parameters["id"] ?: throw IllegalArgumentException("announcement id is required")
         call.principal<CustomUserPrincipal>()?.also { principal ->
             val response = announcementsApi.getAnnouncementUpdateContent(announcementId, principal.id)
@@ -54,7 +67,10 @@ fun Route.announcements(bulletinBoardHost: String, client: HttpClient) = route("
      * Редактировать объявление
      * @OpenAPITag bulletin board api
      */
-    put("update") {
+    put("update", {
+        summary = "Редактировать объявление"
+        tags = listOf("bulletin-board-service")
+    }) {
         val dto = call.receive<UpdateAnnouncementDto>()
         call.principal<CustomUserPrincipal>()?.also { principal ->
             val response = announcementsApi.updateAnnouncement(dto, principal.id)
@@ -66,7 +82,10 @@ fun Route.announcements(bulletinBoardHost: String, client: HttpClient) = route("
      * Добавить просмотр объявлению
      * @OpenAPITag bulletin board api
      */
-    post("addView") {
+    post("addView", {
+        summary = "Добавить просмотр объявлению"
+        tags = listOf("bulletin-board-service")
+    }) {
         val announcementId = call.receive<String>()
         call.principal<CustomUserPrincipal>()?.also { principal ->
             val response = announcementsApi.addViewToAnnouncement(announcementId, principal.id)
@@ -78,7 +97,10 @@ fun Route.announcements(bulletinBoardHost: String, client: HttpClient) = route("
      * Удалить объявление
      * @OpenAPITag bulletin board api
      */
-    delete("delete") {
+    delete("delete", {
+        summary = "Удалить объявление"
+        tags = listOf("bulletin-board-service")
+    }) {
         val announcementId = call.receive<String>()
         call.principal<CustomUserPrincipal>()?.also { principal ->
             val response = announcementsApi.deleteAnnouncement(announcementId, principal.id)
@@ -90,7 +112,10 @@ fun Route.announcements(bulletinBoardHost: String, client: HttpClient) = route("
      * Получить список опубликованных объявлений
      * @OpenAPITag bulletin board api
      */
-    get("published/get-list") {
+    get("published/get-list", {
+        summary = "Получить список опубликованных объявлений"
+        tags = listOf("bulletin-board-service")
+    }) {
         call.principal<CustomUserPrincipal>()?.also { principal ->
             val response = announcementsApi.getPostedAnnouncementList(principal.id)
             respond(call, response)
@@ -101,7 +126,10 @@ fun Route.announcements(bulletinBoardHost: String, client: HttpClient) = route("
      * Скрыть опубликованное объявление
      * @OpenAPITag bulletin board api
      */
-    post("published/hide") {
+    post("published/hide", {
+        summary = "Скрыть опубликованное объявление"
+        tags = listOf("bulletin-board-service")
+    }) {
         val announcementId = call.receive<String>()
         call.principal<CustomUserPrincipal>()?.also { principal ->
             val response = announcementsApi.hidePostedAnnouncement(announcementId, principal.id)
@@ -113,7 +141,10 @@ fun Route.announcements(bulletinBoardHost: String, client: HttpClient) = route("
      * Получить список скрытых объявлений
      * @OpenAPITag bulletin board api
      */
-    get("hidden/get-list") {
+    get("hidden/get-list", {
+        summary = "Получить список скрытых объявлений"
+        tags = listOf("bulletin-board-service")
+    }) {
         call.principal<CustomUserPrincipal>()?.also { principal ->
             val response = announcementsApi.getHiddenAnnouncementList(principal.id)
             respond(call, response)
@@ -124,7 +155,10 @@ fun Route.announcements(bulletinBoardHost: String, client: HttpClient) = route("
      * Восстановить скрытое объявление
      * @OpenAPITag bulletin board api
      */
-    post("hidden/restore") {
+    post("hidden/restore", {
+        summary = "Восстановить скрытое объявление"
+        tags = listOf("bulletin-board-service")
+    }) {
         val announcementId = call.receive<String>()
         call.principal<CustomUserPrincipal>()?.also { principal ->
             val response = announcementsApi.restoreHiddenAnnouncement(announcementId, principal.id)
@@ -136,7 +170,10 @@ fun Route.announcements(bulletinBoardHost: String, client: HttpClient) = route("
      * Получить список объявлений, ожидающих отложенную публикацию
      * @OpenAPITag bulletin board api
      */
-    get("delayed-publishing/get-list") {
+    get("delayed-publishing/get-list", {
+        summary = "Получить список объявлений, ожидающих отложенную публикацию"
+        tags = listOf("bulletin-board-service")
+    }) {
         call.principal<CustomUserPrincipal>()?.also { principal ->
             val response = announcementsApi.getDelayedPublishingAnnouncementList(principal.id)
             respond(call, response)
@@ -147,7 +184,10 @@ fun Route.announcements(bulletinBoardHost: String, client: HttpClient) = route("
      * Сразу опубликовать отложенное объявление
      * @OpenAPITag bulletin board api
      */
-    post("delayed-publishing/publish-immediately") {
+    post("delayed-publishing/publish-immediately", {
+        summary = "Сразу опубликовать отложенное объявление"
+        tags = listOf("bulletin-board-service")
+    }) {
         val announcementId = call.receive<String>()
         call.principal<CustomUserPrincipal>()?.also { principal ->
             val response = announcementsApi.publishImmediatelyDelayedPublishingAnnouncement(announcementId, principal.id)
@@ -159,7 +199,10 @@ fun Route.announcements(bulletinBoardHost: String, client: HttpClient) = route("
      * Получить список объявлений, ожидающих отложенное сокрытие
      * @OpenAPITag bulletin board api
      */
-    get("delayed-hidden/get-list") {
+    get("delayed-hidden/get-list", {
+        summary = "Получить список объявлений, ожидающих отложенное сокрытие"
+        tags = listOf("bulletin-board-service")
+    }) {
         call.principal<CustomUserPrincipal>()?.also { principal ->
             val response = announcementsApi.getDelayedHiddenAnnouncementList(principal.id)
             respond(call, response)

@@ -21,7 +21,7 @@ class AccountApi(private val client: HttpClient, private val basePath: String = 
                 val error = response.body<ErrorResponse>()
                 throw AccountServiceException("400: ${error.message}")
             }
-            else -> throw AccountServiceException("Произошла ошибка при получении пользователя")
+            else -> throw AccountServiceException("Произошла ошибка при получении пользоват-еля")
         }
     }
 

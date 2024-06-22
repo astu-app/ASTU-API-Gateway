@@ -19,6 +19,7 @@ fun Application.module(): Module {
         install(ContentNegotiation) {
             json(Json {
                 this.encodeDefaults = true
+                this.ignoreUnknownKeys = true
             })
         }
         install(HttpTimeout){

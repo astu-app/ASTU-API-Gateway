@@ -10,8 +10,8 @@ class AccountDTO(
     val patronymic: String?,
     val isEmployee: Boolean,
     val isStudent: Boolean,
-    val isAdmin: Boolean = false,
     val isTeacher: Boolean,
+    val isAdmin: Boolean = false,
     val departmentId: String? = null,
     val studentGroupId: String? = null
 )

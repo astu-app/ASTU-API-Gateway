@@ -16,7 +16,7 @@ fun Route.ping() {
     val authHost = environment?.config?.property("ktor.auth.host")?.getString()
     val requestHost = environment?.config?.property("ktor.request.host")?.getString()
     val uniRequestHost = environment?.config?.property("ktor.uni-request.host")?.getString()
-    val bulletinBoardHost = environment?.config?.property("ktor.request.host")?.getString()
+    val bulletinBoardHost = environment?.config?.property("ktor.bulletin-board.host")?.getString()
     val client by inject<HttpClient>()
 
     /**
