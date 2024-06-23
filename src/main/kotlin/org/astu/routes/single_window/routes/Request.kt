@@ -4,9 +4,7 @@ import api.account.client.apis.AccountApi
 import api.account.client.models.AccountDTO
 import api.request.client.apis.RequestControllerApi
 import api.request.client.models.AddRequestDTO
-import api.request.client.models.AddRequirementTypeDTO
 import api.request.client.models.FailRequestDTO
-import io.github.smiley4.ktorswaggerui.dsl.delete
 import io.github.smiley4.ktorswaggerui.dsl.get
 import io.github.smiley4.ktorswaggerui.dsl.post
 import io.ktor.client.*
@@ -17,16 +15,16 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.astu.notify.NotifyApi
 import org.astu.plugins.CustomUserPrincipal
-import org.astu.plugins.accountKey
-import org.astu.plugins.checkRole
 import org.astu.routes.single_window.dto.RequestDTO
 import java.io.File
 import java.util.*
 
-fun Route.request(host: String, accountHost: String, client: HttpClient) {
+fun Route.request(host: String, accountHost: String,notifyHost: String, token: String, client: HttpClient) {
     val api = RequestControllerApi(client, host)
     val accountApi = AccountApi(client, accountHost)
+    val notifyApi = NotifyApi(client , token, notifyHost)
 
     /**
      * Получение списка запросов пользователя
@@ -71,7 +69,7 @@ fun Route.request(host: String, accountHost: String, client: HttpClient) {
      * Удаление запроса
      * @OpenAPITag request api
      */
-    delete("user/request/{id}", {
+    post("user/request/{id}/remove", {
         summary = "Удаление запроса"
         request {
             pathParameter<UUID>("id")
@@ -189,7 +187,6 @@ fun Route.request(host: String, accountHost: String, client: HttpClient) {
             multipartBody {
                 this.part<File>("files")
             }
-            body<AddRequirementTypeDTO>()
         }
     }) {
         val requestId = UUID.fromString(call.parameters["id"])
@@ -200,6 +197,36 @@ fun Route.request(host: String, accountHost: String, client: HttpClient) {
             }.onFailure {
                 call.respondText(it.message ?: "", status = HttpStatusCode.BadRequest)
             }.onSuccess {
+                runCatching {
+                    notifyApi.notify(it, "Заявка одобрена", "Ваше заявление было одобрено")
+                }
+                call.respond(HttpStatusCode.OK)
+            }
+        }
+    }
+
+    /**
+     * Одобрение заявки пользователя
+     * @OpenAPITag request api
+     */
+    post("employee/request/{id}/approve", {
+        summary = "Одобрение заявки пользователя(комментарий)"
+        request {
+            pathParameter<UUID>("id")
+            queryParameter<String>("comment")
+        }
+    }) {
+        val requestId = UUID.fromString(call.parameters["id"])
+        val comment = call.request.queryParameters["comment"] ?: return@post call.respond(HttpStatusCode.BadRequest)
+        call.principal<CustomUserPrincipal>()?.also { _ ->
+            runCatching {
+                api.approve(requestId, comment)
+            }.onFailure {
+                call.respondText(it.message ?: "", status = HttpStatusCode.BadRequest)
+            }.onSuccess {
+                runCatching {
+                    notifyApi.notify(it, "Заявка одобрена", "Ваше заявление было одобрено")
+                }
                 call.respond(HttpStatusCode.OK)
             }
         }
@@ -225,6 +252,9 @@ fun Route.request(host: String, accountHost: String, client: HttpClient) {
             }.onFailure {
                 call.respondText(it.message ?: "", status = HttpStatusCode.BadRequest)
             }.onSuccess {
+                runCatching {
+                    notifyApi.notify(it, "Заявка отклонена", "Ваше заявление было отклонено")
+                }
                 call.respond(HttpStatusCode.OK)
             }
         }
