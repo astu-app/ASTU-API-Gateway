@@ -6,6 +6,8 @@ import api.account.client.models.AccountDTO
 import api.account.client.models.SummaryAccountDTO
 import api.auth.client.apis.JWTApi
 import api.auth.client.models.JWTRegistrationDTO
+import api.bulletinBoard.client.apis.UsersApi
+import api.bulletinBoard.client.models.users.UserSummaryDto
 import io.github.smiley4.ktorswaggerui.dsl.get
 import io.github.smiley4.ktorswaggerui.dsl.post
 import io.github.smiley4.ktorswaggerui.dsl.route
@@ -23,11 +25,14 @@ import org.koin.ktor.ext.inject
 fun Route.accountServiceDefinition() {
     val client by inject<HttpClient>()
     val accountHost = environment?.config?.property("ktor.account.host")?.getString()
-        ?: throw Exception("Host not set")
+        ?: throw Exception("Account host not set")
+    val bulletinBoardHost = environment?.config?.property("ktor.bulletin-board.host")?.getString()
+        ?: throw Exception("Bulletin board host not set")
     val authHost = environment?.config?.property("ktor.auth.host")?.getString()
-        ?: throw Exception("Host not set")
+        ?: throw Exception("Auth host not set")
 
     val accountApi = AccountApi(client, accountHost)
+    val userApi = UsersApi(client, bulletinBoardHost)
     val authApi = JWTApi(client, authHost)
 
     route("/account-service", {
@@ -51,6 +56,9 @@ fun Route.accountServiceDefinition() {
 
             val id = accountApi.addAccount(dto.account)
             println(id)
+
+            val userSummaryDto = UserSummaryDto(id, dto.account.firstName, dto.account.secondName, dto.account.patronymic)
+            userApi.register(userSummaryDto)
 
             val jwtRegDTO = JWTRegistrationDTO(dto.auth.login, dto.auth.password, id)
             authApi.jwtRegistartionPost(jwtRegDTO)

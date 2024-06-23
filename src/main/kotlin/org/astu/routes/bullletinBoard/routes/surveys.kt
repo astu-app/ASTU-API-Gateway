@@ -9,17 +9,21 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import api.bulletinBoard.client.models.surveys.creation.CreateSurveyDto
 import api.bulletinBoard.client.models.surveys.creation.VoteInSurveyDto
+import io.github.smiley4.ktorswaggerui.dsl.post
 import org.astu.plugins.CustomUserPrincipal
 import org.astu.routes.bullletinBoard.respond
 
-fun Route.surveys(bulletinBoardHost: String, client: HttpClient) = route("/") {
+fun Route.surveys(bulletinBoardHost: String, client: HttpClient) = route("/surveys") {
     val surveysApi = api.bulletinBoard.client.apis.SurveysApi(client, bulletinBoardHost)
 
     /**
      * Создать опрос
      * @OpenAPITag bulletin board api
      */
-    post("surveys/create") {
+    post("create", {
+        summary = "Создать опрос"
+        tags = listOf("bulletin-board-service")
+    }) {
         val dto = call.receive<api.bulletinBoard.client.models.surveys.creation.CreateSurveyDto>()
         call.principal<CustomUserPrincipal>()?.also { principal ->
             val response = surveysApi.createSurvey(dto, principal.id)
@@ -31,7 +35,10 @@ fun Route.surveys(bulletinBoardHost: String, client: HttpClient) = route("/") {
      * Закрыть опрос
      * @OpenAPITag bulletin board api
      */
-    post("surveys/close-survey") {
+    post("close-survey", {
+        summary = "Закрыть опрос"
+        tags = listOf("bulletin-board-service")
+    }) {
         val surveyId = call.receive<String>()
         call.principal<CustomUserPrincipal>()?.also { principal ->
             val response = surveysApi.closeSurvey(surveyId, principal.id)
@@ -43,7 +50,10 @@ fun Route.surveys(bulletinBoardHost: String, client: HttpClient) = route("/") {
      * Проголосовать в опросе
      * @OpenAPITag bulletin board api
      */
-    post("surveys/vote") {
+    post("vote", {
+        summary = "Проголосовать в опросе"
+        tags = listOf("bulletin-board-service")
+    }) {
         val dto = call.receive<api.bulletinBoard.client.models.surveys.creation.VoteInSurveyDto>()
         call.principal<CustomUserPrincipal>()?.also { principal ->
             val response = surveysApi.voteInSurvey(dto, principal.id)

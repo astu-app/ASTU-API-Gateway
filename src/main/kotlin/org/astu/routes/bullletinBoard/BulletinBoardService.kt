@@ -11,7 +11,7 @@ class BulletinBoardService {
 }
 
 fun Route.bulletinBoardServiceDefinition() {
-    val bulletinBoardHost = environment?.config?.property("ktor.bulletinBoard.host")?.getString() ?: throw Exception("Bulletin board host not set")
+    val bulletinBoardHost = environment?.config?.property("ktor.bulletin-board.host")?.getString() ?: throw Exception("Bulletin board host not set")
     val client by inject<HttpClient>()
 
     route("/bulletin-board-service") {
