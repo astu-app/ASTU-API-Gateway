@@ -22,6 +22,7 @@ import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import io.ktor.http.content.*
 import api.request.client.models.RequestDTO
+import io.ktor.client.statement.*
 import java.util.*
 
 class RequestControllerApi(val client: HttpClient, private val basePath: String = "http://localhost:8085") {
@@ -56,14 +57,14 @@ class RequestControllerApi(val client: HttpClient, private val basePath: String 
      * @param id
      * @return void
      */
-    suspend fun fail(body: FailRequestDTO, id: UUID) {
+    suspend fun fail(body: FailRequestDTO, id: UUID): String {
         val response = client.post("${basePath}api/request/$id/fail") {
             contentType(ContentType.Application.Json)
             setBody(body)
         }
 
         return when (response.status) {
-            HttpStatusCode.OK -> Unit
+            HttpStatusCode.OK -> response.bodyAsText()
             HttpStatusCode.BadRequest -> {
                 val error = response.body<ErrorResponse>()
                 throw RequestServiceException("400: ${error.message}")
@@ -116,11 +117,11 @@ class RequestControllerApi(val client: HttpClient, private val basePath: String 
      * @param userId
      * @return void
      */
-    suspend fun removeRequest(requestId: UUID) {
-        val response = client.delete("${basePath}api/request/user/$requestId")
+    suspend fun removeRequest(requestId: UUID): String  {
+        val response = client.post("${basePath}api/request/user/$requestId/delete")
 
         return when (response.status) {
-            HttpStatusCode.OK -> Unit
+            HttpStatusCode.OK -> response.bodyAsText()
             HttpStatusCode.BadRequest -> {
                 val error = response.body<ErrorResponse>()
                 throw RequestServiceException("400: ${error.message}")
@@ -136,11 +137,33 @@ class RequestControllerApi(val client: HttpClient, private val basePath: String 
      * @param files  (optional)
      * @return void
      */
-    suspend fun success(id: UUID, files: List<PartData>) {
+    suspend fun success(id: UUID, files: List<PartData>): String  {
         val response = client.submitFormWithBinaryData(url ="${basePath}api/request/$id/success", formData = files)
 
         return when (response.status) {
-            HttpStatusCode.OK -> Unit
+            HttpStatusCode.OK -> response.bodyAsText()
+            HttpStatusCode.BadRequest -> {
+                val error = response.body<ErrorResponse>()
+                throw RequestServiceException("400: ${error.message}")
+            }
+            else -> throw RequestServiceException("Не удалось одобрить заявление")
+        }
+    }
+
+    /**
+     *
+     *
+     * @param id
+     * @param files  (optional)
+     * @return void
+     */
+    suspend fun approve(id: UUID, comment: String): String {
+        val response = client.post("${basePath}api/request/$id/approve"){
+            parameter("comment", comment)
+        }
+
+        return when (response.status) {
+            HttpStatusCode.OK -> response.bodyAsText()
             HttpStatusCode.BadRequest -> {
                 val error = response.body<ErrorResponse>()
                 throw RequestServiceException("400: ${error.message}")

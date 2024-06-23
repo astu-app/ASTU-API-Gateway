@@ -19,7 +19,6 @@ import api.request.client.models.TemplateDTO
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import java.util.*
 
@@ -58,8 +57,6 @@ class TemplateControllerApi(val client: HttpClient, private val basePath: String
             contentType(ContentType.Application.Json)
             setBody(accountDTO)
         }
-        println(response.status)
-        println(response.bodyAsText())
         return when (response.status) {
             HttpStatusCode.OK -> response.body<List<TemplateDTO>>()
             else -> throw RequestServiceException("Не удалось получить список шаблонов")
