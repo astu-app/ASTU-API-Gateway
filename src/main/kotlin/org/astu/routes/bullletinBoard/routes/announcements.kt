@@ -27,8 +27,9 @@ fun Route.announcements(bulletinBoardHost: String, client: HttpClient) = route("
         tags = listOf("bulletin-board-service")
     }) {
         val dto = call.receive<CreateAnnouncementDto>()
+        val rootUserGroupId = call.request.headers["X-Root-UserGroup-Id"] ?: throw IllegalArgumentException("X-Root-UserGroup-Id header is missing")
         call.principal<CustomUserPrincipal>()?.also { principal ->
-            val response = announcementsApi.createAnnouncement(dto, principal.id)
+            val response = announcementsApi.createAnnouncement(dto, principal.id, rootUserGroupId)
             respond(call, response)
         }
     }

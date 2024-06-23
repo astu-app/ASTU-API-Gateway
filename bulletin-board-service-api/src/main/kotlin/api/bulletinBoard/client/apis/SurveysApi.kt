@@ -13,10 +13,11 @@ class SurveysApi(private val client: HttpClient, private val baseUrl: String) {
     /*
      * Создать опрос
      */
-    suspend fun createSurvey(createSurveyDto: CreateSurveyDto, principalId: String): HttpResponseContent {
+    suspend fun createSurvey(createSurveyDto: CreateSurveyDto, principalId: String, rootUserGroupId: String): HttpResponseContent {
         val response = client.post("${baseUrl}api/surveys/create") {
             headers {
                 append("X-User-Id", principalId)
+                append("X-Root-UserGroup-Id", rootUserGroupId)
                 append("Content-Type", "application/json")
             }
             setBody(createSurveyDto)

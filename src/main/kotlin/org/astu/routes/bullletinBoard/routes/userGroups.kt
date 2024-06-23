@@ -25,8 +25,9 @@ fun Route.userGroups(bulletinBoardHost: String, client: HttpClient) = route("/us
         summary = "Получить данные для создания группы пользователей"
         tags = listOf("bulletin-board-service")
     }) {
+        val rootUserGroupId = call.request.headers["X-Root-UserGroup-Id"] ?: throw IllegalArgumentException("X-Root-UserGroup-Id header is missing")
         call.principal<CustomUserPrincipal>()?.also { principal ->
-            val response = userGroupsApi.getUsergroupCreateContent(principal.id)
+            val response = userGroupsApi.getUsergroupCreateContent(principal.id, rootUserGroupId)
             if (response.content != null)
                 call.respond(response.status, response.content!!)
             else
@@ -43,8 +44,9 @@ fun Route.userGroups(bulletinBoardHost: String, client: HttpClient) = route("/us
         tags = listOf("bulletin-board-service")
     }) {
         val dto = call.receive<api.bulletinBoard.client.models.userGroups.CreateUserGroupDto>()
+        val rootUserGroupId = call.request.headers["X-Root-UserGroup-Id"] ?: throw IllegalArgumentException("X-Root-UserGroup-Id header is missing")
         call.principal<CustomUserPrincipal>()?.also { principal ->
-            val response = userGroupsApi.createUsergroup(dto, principal.id)
+            val response = userGroupsApi.createUsergroup(dto, principal.id, rootUserGroupId)
             respond(call, response)
         }
     }
@@ -86,8 +88,9 @@ fun Route.userGroups(bulletinBoardHost: String, client: HttpClient) = route("/us
         tags = listOf("bulletin-board-service")
     }) {
         val userGroupId = call.parameters["id"] ?: throw IllegalArgumentException("usergroup id is required")
+        val rootUserGroupId = call.request.headers["X-Root-UserGroup-Id"] ?: throw IllegalArgumentException("X-Root-UserGroup-Id header is missing")
         call.principal<CustomUserPrincipal>()?.also { principal ->
-            val response = userGroupsApi.getDetails(userGroupId, principal.id)
+            val response = userGroupsApi.getDetails(userGroupId, principal.id, rootUserGroupId)
             respond(call, response)
         }
     }
@@ -101,8 +104,9 @@ fun Route.userGroups(bulletinBoardHost: String, client: HttpClient) = route("/us
         tags = listOf("bulletin-board-service")
     }) {
         val userGroupId = call.parameters["id"] ?: throw IllegalArgumentException("usergroup id is required")
+        val rootUserGroupId = call.request.headers["X-Root-UserGroup-Id"] ?: throw IllegalArgumentException("X-Root-UserGroup-Id header is missing")
         call.principal<CustomUserPrincipal>()?.also { principal ->
-            val response = userGroupsApi.getUsergroupUpdateContent(userGroupId, principal.id)
+            val response = userGroupsApi.getUsergroupUpdateContent(userGroupId, principal.id, rootUserGroupId)
             respond(call, response)
         }
     }
@@ -116,8 +120,9 @@ fun Route.userGroups(bulletinBoardHost: String, client: HttpClient) = route("/us
         tags = listOf("bulletin-board-service")
     }) {
         val dto = call.receive<api.bulletinBoard.client.models.userGroups.UpdateUserGroupDto>()
+        val rootUserGroupId = call.request.headers["X-Root-UserGroup-Id"] ?: throw IllegalArgumentException("X-Root-UserGroup-Id header is missing")
         call.principal<CustomUserPrincipal>()?.also { principal ->
-            val response = userGroupsApi.updateUsergroup(dto, principal.id)
+            val response = userGroupsApi.updateUsergroup(dto, principal.id, rootUserGroupId)
             respond(call, response)
         }
     }
@@ -131,8 +136,9 @@ fun Route.userGroups(bulletinBoardHost: String, client: HttpClient) = route("/us
         tags = listOf("bulletin-board-service")
     }) {
         val userGroupId = call.receive<String>()
+        val rootUserGroupId = call.request.headers["X-Root-UserGroup-Id"] ?: throw IllegalArgumentException("X-Root-UserGroup-Id header is missing")
         call.principal<CustomUserPrincipal>()?.also { principal ->
-            val response = userGroupsApi.deleteUsergroup(userGroupId, principal.id)
+            val response = userGroupsApi.deleteUsergroup(userGroupId, principal.id, rootUserGroupId)
             respond(call, response)
         }
     }

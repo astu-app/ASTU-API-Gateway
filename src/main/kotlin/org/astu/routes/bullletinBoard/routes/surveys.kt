@@ -25,8 +25,9 @@ fun Route.surveys(bulletinBoardHost: String, client: HttpClient) = route("/surve
         tags = listOf("bulletin-board-service")
     }) {
         val dto = call.receive<api.bulletinBoard.client.models.surveys.creation.CreateSurveyDto>()
+        val rootUserGroupId = call.request.headers["X-Root-UserGroup-Id"] ?: throw IllegalArgumentException("X-Root-UserGroup-Id header is missing")
         call.principal<CustomUserPrincipal>()?.also { principal ->
-            val response = surveysApi.createSurvey(dto, principal.id)
+            val response = surveysApi.createSurvey(dto, principal.id, rootUserGroupId)
             respond(call, response)
         }
     }

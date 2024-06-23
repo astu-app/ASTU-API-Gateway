@@ -12,10 +12,11 @@ class AnnouncementsApi(private val client: HttpClient, private val baseUrl: Stri
     /**
      * Создать объявление
      */
-    suspend fun createAnnouncement(createAnnouncementDto: CreateAnnouncementDto, principalId: String): HttpResponseContent {
+    suspend fun createAnnouncement(createAnnouncementDto: CreateAnnouncementDto, principalId: String, rootUserGroupId: String): HttpResponseContent {
         val response = client.post("${baseUrl}api/announcements/create") {
             headers {
                 append("X-User-Id", principalId)
+                append("X-Root-UserGroup-Id", rootUserGroupId)
                 append("Content-Type", "application/json")
             }
             setBody(createAnnouncementDto)
