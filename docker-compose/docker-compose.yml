@@ -1,0 +1,267 @@
+services:
+  ################################################### API GATEWAY
+  api_gateway:
+    container_name: astu-api-gateway
+    image: traumtoten/gateway:v1
+    ports:
+      - "8079:8082"
+    restart: on-failure
+    depends_on:
+      gotify:
+        condition: service_healthy
+      bulletin_board_service:
+        condition: service_healthy
+      auth_service:
+        condition: service_started
+      account_data_service:
+        condition: service_started
+#      university_data_service:
+#        condition: service_started
+      request_service:
+        condition: service_started
+      universal_request_service:
+        condition: service_started
+    networks:
+      - services_network
+      - gotify_network
+    env_file:
+      - ../.env
+
+  ################################################### GOTIFY
+  gotify:
+    image: gotify/server:latest
+    hostname: gotify-service
+    container_name: gotify
+    ports:
+      - 8081:80
+    environment:
+      - GOTIFY_DEFAULTUSER_PASS=admin
+    volumes:
+      - ../../infrastructure/gotify/data:/app/data
+    networks:
+      - gotify_network
+
+  ################################################### ASTU BULLETIN BOARD
+  bulletin_board_service:
+    container_name: astu_bulletin_board_service
+    hostname: bulletin-board-service
+    image: vany152/bulletin_board:v1
+#    ports:
+#      - "55080:80"
+#      - "55443:443"
+    environment:
+      DATABASE_HOST: bulletin_board_db
+      DATABASE_PORT: 5432
+      DATABASE_NAME: bulletin_board
+      DATABASE_USERNAME: admin
+      DATABASE_PASSWORD: admin
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:80;
+      NOTIFICATION_TOKEN: A-_dDFPgLi0KIVG
+      NOTIFICATION_SERVER_HOST: gotify
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --fail http://localhost:80/ping || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    depends_on:
+      - bulletin_board_service_db
+    networks:
+      - services_network
+      - bulletin_board_network
+
+  bulletin_board_service_db:
+    container_name: bulletin_board_db
+    image: postgres:alpine
+    environment:
+      POSTGRES_DB: "bulletin_board"
+      POSTGRES_USER: "admin"
+      POSTGRES_PASSWORD: "admin"
+    ports:
+      - "5440:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d bulletin_board" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    volumes:
+      - ../../bulletin-board-server/src/BulletInBoardServer/initdb:/docker-entrypoint-initdb.d
+      - ../../infrastructure/astu-bulletin-board-db/:/var/lib/postgresql/data
+    networks:
+      - bulletin_board_network
+
+  ################################################### ASTU AUTH
+  auth_service:
+    container_name: authService
+    hostname: auth-service
+    restart: always
+    image: traumtoten/auth:v1
+#    ports:
+#      - "56080:50000"
+    environment:
+      AUTH_DB_CONNECTION: jdbc:postgresql://authDB/authDB
+      AUTH_DB_USER: admin
+      AUTH_DB_PASSWORD: admin
+    env_file:
+      - ../../ASTUAuthService/.env
+    depends_on:
+      astu_auth_service_db:
+        condition: service_healthy
+    networks:
+      - services_network
+      - auth_network
+
+  astu_auth_service_db:
+    container_name: authDB
+    hostname: authDB
+    image: postgres:alpine
+    ports:
+      - "5441:5432"
+    environment:
+      POSTGRES_DB: authDB
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - ../../infrastructure/auth-db/:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d authDB" ]
+    networks:
+      - auth_network
+
+  ################################################### ACCOUNT DATA
+  account_data_service:
+    restart: on-failure
+    container_name: AccountDataService
+    hostname: account-service
+#    ports:
+#      - "52080:80"
+    image: traumtoten/account-data-service:v1
+    links:
+      - account_data_service_db:db
+    depends_on:
+      account_data_service_db:
+        condition: service_healthy
+    env_file:
+      - ../../ASTU-Account-Service/.env
+    networks:
+      - services_network
+      - account_network
+
+  account_data_service_db:
+    restart: on-failure
+    container_name: accountDataDb
+    hostname: accountDataDb
+    image: postgres:alpine
+    ports:
+      - "5442:5432"
+    networks:
+      - account_network
+    env_file:
+      - ../../ASTU-Account-Service/.env
+    volumes:
+      - ../../infrastructure/account-data-db/:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d accountDataDb" ]
+
+  ################################################### REQUEST
+  request_service:
+    restart: on-failure
+    container_name: astu_request_service
+    hostname: request-service
+    image: traumtoten/request-service:v1
+    depends_on:
+      request_service_db:
+        condition: service_healthy
+    networks:
+      - services_network
+      - requests_network
+    env_file:
+      - ../../ASTU-Request-Service/.env
+
+  request_service_db:
+    restart: on-failure
+    container_name: astu_request_service_db
+    hostname: requestDb
+    image: postgres:alpine
+    networks:
+      - requests_network
+    env_file:
+      - ../../ASTU-Request-Service/.env
+    volumes:
+      - ../../infrastructure/request-db:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d requestdb" ]
+
+  ################################################### UNIVERSAL REQUEST SERVICE
+  universal_request_service:
+    restart: on-failure
+    container_name: astu_universal_request_service
+    hostname: uni-request-service
+    image: traumtoten/universal-request:v1
+#    ports:
+#      - "55080:80"
+    networks:
+      - services_network
+    env_file:
+      - ../../ASTU-Universal-Request-Service/.env
+
+  ################################################### UNIVERSITY DATA
+#  university_data_service:
+#    restart: on-failure
+#    container_name: UniversityDataService
+#    hostname: university-service
+#    build:
+#      context: ./astu-university-data-service
+#    image: astu/university-data-service:v1
+#    ports:
+#      - "53080:80"
+#    links:
+#      - university_data_service_db
+#    depends_on:
+#      university_data_service_db:
+#        condition: service_healthy
+#    env_file:
+#      - ./astu-university-data-service/.env
+#    networks:
+#      - services_network
+#      - uni_network
+#
+#  university_data_service_db:
+#    restart: on-failure
+#    container_name: universityDataDb
+#    hostname: universityDataDb
+#    image: postgres:alpine
+#    env_file:
+#      - ./astu-university-data-service/.env
+#    volumes:
+#      - ./infrastructure/university-data-db:/var/lib/postgresql/data
+#    healthcheck:
+#      test: [ "CMD-SHELL", "pg_isready -U admin -d internappdb" ]
+#    networks:
+#      - uni_network
+
+
+networks:
+  services_network:
+    driver: bridge
+
+  gotify_network:
+    driver: bridge
+
+  bulletin_board_network:
+    driver: bridge
+
+  auth_network:
+    driver: bridge
+
+  account_network:
+    driver: bridge
+
+  uni_network:
+    driver: bridge
+
+  requests_network:
+    driver: bridge
